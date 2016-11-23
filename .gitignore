@@ -1,0 +1,18 @@
+# System files #
+################
+.DS_Store
+
+# Compiled sources #
+####################
+target
+classpath.out
+
+# Eclipse metadata #
+####################
+.classpath
+.project
+.settings
+
+# Editor Temporary #
+####################
+*.swp
