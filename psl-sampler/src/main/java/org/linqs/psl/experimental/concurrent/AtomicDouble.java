@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.utils.concurrent;
+package org.linqs.psl.experimental.concurrent;
 
 public class AtomicDouble {
 

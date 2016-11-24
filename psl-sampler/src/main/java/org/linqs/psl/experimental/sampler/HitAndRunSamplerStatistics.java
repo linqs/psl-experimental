@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.utils.sampler;
+package org.linqs.psl.experimental.sampler;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.linqs.psl.utils.concurrent.AtomicDouble;
+import org.linqs.psl.experimental.concurrent.AtomicDouble;
 
 import com.google.common.base.Preconditions;
 
