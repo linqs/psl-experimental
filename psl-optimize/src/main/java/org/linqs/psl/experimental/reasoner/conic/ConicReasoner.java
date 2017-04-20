@@ -104,12 +104,6 @@ public class ConicReasoner implements Reasoner {
 	}
 	
 	@Override
-	public GroundRule getGroundKernel(GroundRule gk) {
-		ConicProgramProxy proxy = gkRepresentation.get(gk);
-		return (proxy != null) ? proxy.getGroundKernel() : null;
-	}
-	
-	@Override
 	public void changedGroundRule(GroundRule gk) {
 		if (!gkRepresentation.containsKey(gk)) throw new IllegalArgumentException("Provided evidence has never been added to the reasoner: " + gk);
 		ConicProgramProxy proxy = gkRepresentation.get(gk);
