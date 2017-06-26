@@ -22,7 +22,6 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-ltn</artifactId>
 	<name>psl-ltn</name>
-	<version>CANARY</version>
 	<packaging>jar</packaging>
 	<description>Experimental Latent Topic Netwok in PSL. From J.R. Foulds, S.H. Kumar, L. Getoor (2015). Latent Topic Networks: A Versatile Probabilistic Programming Framework for Topic Models.</description>
 	<parent>
@@ -35,12 +34,12 @@
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-graph</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- linear algebra dependencies -->

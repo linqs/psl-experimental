@@ -22,7 +22,6 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-addon-mosek</artifactId>
 	<name>psl-addon-mosek</name>
-	<version>CANARY</version>
 	<packaging>jar</packaging>
 	<description>A wrapper to use the MOSEK numeric optimization software with the PSL software from the LINQS research group.</description>
 	<parent>
@@ -34,12 +33,12 @@
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-reasoner</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.mosek</groupId>

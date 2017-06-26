@@ -22,7 +22,6 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-weightlearning</artifactId>
 	<name>psl-weightlearning</name>
-	<version>CANARY</version>
 	<packaging>jar</packaging>
 	<description>Experimental optimization extensions of the PSL software from the LINQS research group.</description>
 	<parent>
@@ -35,12 +34,12 @@
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-optimize</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- linear algebra dependencies -->

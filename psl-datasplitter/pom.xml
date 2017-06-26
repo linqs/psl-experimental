@@ -22,7 +22,6 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-datasplitter</artifactId>
 	<name>psl-datasplitter</name>
-	<version>CANARY</version>
 	<packaging>jar</packaging>
 	<description>Experimental data splitting extensions of the PSL software from the LINQS research group.</description>
 	<parent>
@@ -35,7 +34,7 @@
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>CANARY</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- linear algebra dependencies -->
