@@ -26,19 +26,14 @@
 	<description>A wrapper to use the MOSEK numeric optimization software with the PSL software from the LINQS research group.</description>
 	<parent>
 		<groupId>org.linqs</groupId>
-		<artifactId>psl-utils</artifactId>
-		<version>CANARY</version>
+		<artifactId>psl-experimental</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.linqs</groupId>
-			<artifactId>psl-reasoner</artifactId>
-			<version>${project.version}</version>
+			<version>${psl-core-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.mosek</groupId>

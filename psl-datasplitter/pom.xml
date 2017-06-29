@@ -27,14 +27,14 @@
 	<parent>
 		<groupId>org.linqs</groupId>
 		<artifactId>psl-experimental</artifactId>
-		<version>CANARY</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>${project.version}</version>
+			<version>${psl-core-version}</version>
 		</dependency>
 
 		<!-- linear algebra dependencies -->

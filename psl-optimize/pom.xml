@@ -27,19 +27,19 @@
 	<parent>
 		<groupId>org.linqs</groupId>
 		<artifactId>psl-experimental</artifactId>
-		<version>CANARY</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-core</artifactId>
-			<version>${project.version}</version>
+			<version>${psl-core-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.linqs</groupId>
 			<artifactId>psl-graph</artifactId>
-			<version>${project.version}</version>
+			<version>${psl-utils-version}</version>
 		</dependency>
 
 		<!-- linear algebra dependencies -->
@@ -47,6 +47,11 @@
 			<groupId>org.ujmp</groupId>
 			<artifactId>ujmp-complete</artifactId>
 			<version>0.2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.emory.mathcs</groupId>
+			<artifactId>csparsej</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 		<!-- logging dependencies -->
