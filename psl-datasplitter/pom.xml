@@ -22,6 +22,7 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-datasplitter</artifactId>
 	<name>psl-datasplitter</name>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<description>Experimental data splitting extensions of the PSL software from the LINQS research group.</description>
 	<parent>
