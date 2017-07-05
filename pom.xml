@@ -22,7 +22,7 @@
 	<groupId>org.linqs</groupId>
 	<artifactId>psl-experimental</artifactId>
 	<name>psl-experimental</name>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<description>Utilities for the PSL software from the LINQS research group.</description>
 	<licenses>
