@@ -54,6 +54,11 @@
 			<artifactId>csparsej</artifactId>
 			<version>1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>edu.emory.mathcs</groupId>
+			<artifactId>jplasma</artifactId>
+			<version>1.2</version>
+		</dependency>
 
 		<!-- logging dependencies -->
 		<dependency>
@@ -92,11 +97,6 @@
 		</dependency>
 
 		<!-- miscellaneous dependencies -->
-		<dependency>
-			<groupId>de.mathnbits</groupId>
-			<artifactId>mathnbitsSTL</artifactId>
-			<version>1.0</version>
-		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.collections</groupId>
 			<artifactId>collections-generic</artifactId>

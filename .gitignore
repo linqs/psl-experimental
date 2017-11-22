@@ -6,6 +6,7 @@
 ####################
 target
 classpath.out
+dependency-reduced-pom.xml
 
 # Eclipse metadata #
 ####################
