@@ -17,10 +17,6 @@
  */
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
 import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.config.ConfigManager;
@@ -31,37 +27,40 @@ import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.model.rule.WeightedRule;
-import org.linqs.psl.model.weight.NegativeWeight;
-import org.linqs.psl.model.weight.PositiveWeight;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Learns new weights for the {@link WeightedRule CompatibilityKernels}
  * in a {@link Model} using max-margin learning.
  * <p>
  * The algorithm is based on structural SVM with cutting plane optimization
- * The objective is to find a weight vector that minimizes an L2 regularizer 
- * subject to the constraint that the ground truth score is better than any 
+ * The objective is to find a weight vector that minimizes an L2 regularizer
+ * subject to the constraint that the ground truth score is better than any
  * other solution that is scaled by a loss function L.
  * <p>
- * min ||w||^2 + C \xi      <br />
+ * min ||w||^2 + C \xi		<br />
  * s.t. w * f(y) < min_y' (w * f(y') - L(y, y')) + \xi
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  * @author Bert Huang <bert@cs.umd.edu>
  */
 abstract public class MaxMargin extends WeightLearningApplication {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(MaxMargin.class);
-	
+
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
+	 *
 	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "maxmargin";
-		
+
 	/**
 	 * Key for double property, cutting plane tolerance
 	 */
@@ -83,14 +82,14 @@ abstract public class MaxMargin extends WeightLearningApplication {
 	public static final String MAX_ITER_KEY = CONFIG_PREFIX + ".maxiter";
 	/** Default value for MAX_ITER_KEY */
 	public static final int MAX_ITER_DEFAULT = 500;
-	
+
 	/**
-	 * Key for boolean property. If true, only non-negative weights will be learned. 
+	 * Key for boolean property. If true, only non-negative weights will be learned.
 	 */
 	public static final String NONNEGATIVE_WEIGHTS_KEY = CONFIG_PREFIX + ".nonnegativeweights";
 	/** Default value for NONNEGATIVE_WEIGHTS_KEY */
 	public static final boolean NONNEGATIVE_WEIGHTS_DEFAULT = true;
-	
+
 	/**
 	 * Key for NormScalingType enum property. Determines type of norm scaling
 	 * MaxMargin will use in its objective.
@@ -98,15 +97,15 @@ abstract public class MaxMargin extends WeightLearningApplication {
 	public static final String SCALE_NORM_KEY = CONFIG_PREFIX + ".scalenorm";
 	/** Default value for SCALE_NORM_KEY */
 	public static final NormScalingType SCALE_NORM_DEFAULT = NormScalingType.NONE;
-	
+
 	/**
-	 * Key for SquareSlack boolean property. Determines whether to penalize 
+	 * Key for SquareSlack boolean property. Determines whether to penalize
 	 * slack linearly or quadratically.
 	 */
 	public static final String SQUARE_SLACK_KEY= CONFIG_PREFIX + ".squareslack";
 	/** Default value for SQUARE_SLACK KEY*/
 	public static final boolean SQUARE_SLACK_DEFAULT = false;
-	
+
 	/** Types of norm scaling MaxMargin can use during learning */
 	public enum NormScalingType {
 		/** No norm scaling */
@@ -126,16 +125,16 @@ abstract public class MaxMargin extends WeightLearningApplication {
 		 */
 		INVERSE_NUM_GROUNDINGS;
 	}
-	
+
 	protected final double tolerance;
 	protected final int maxIter;
 	protected final boolean nonnegativeWeights;
 	protected double slackPenalty;
 	protected final NormScalingType scaleNorm;
 	protected final boolean squareSlack;
-	
+
 	protected MinNormProgram normProgram;
-	
+
 	public MaxMargin(Model model, Database rvDB, Database observedDB, ConfigBundle config) {
 		super(model, rvDB, observedDB, config);
 		tolerance = config.getDouble(CUTTING_PLANE_TOLERANCE_KEY, CUTTING_PLANE_TOLERANCE_DEFAULT);
@@ -145,49 +144,46 @@ abstract public class MaxMargin extends WeightLearningApplication {
 		scaleNorm = (NormScalingType) config.getEnum(SCALE_NORM_KEY, SCALE_NORM_DEFAULT);
 		squareSlack = config.getBoolean(SQUARE_SLACK_KEY, SQUARE_SLACK_DEFAULT);
 	}
-	
+
 	@Override
-	protected void initGroundModel()
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+	protected void initGroundModel() {
 		super.initGroundModel();
-		
+
 		/* Sets up the MinNormProgram (in this method for appropriate throws declarations) */
-		normProgram = new MinNormProgram(kernels.size() + 1, nonnegativeWeights, config);
-		
+		normProgram = new MinNormProgram(mutableRules.size() + 1, nonnegativeWeights, config);
+
 		/* Sets linear objective term */
-		double [] coefficients = new double[kernels.size() + 1];
-		coefficients[kernels.size()] = (squareSlack)? 0.0 : slackPenalty;
+		double [] coefficients = new double[mutableRules.size() + 1];
+		coefficients[mutableRules.size()] = (squareSlack)? 0.0 : slackPenalty;
 		normProgram.setLinearCoefficients(coefficients);
-		
+
 		/* Determines coefficients for the quadratic objective term */
-		double [] quadCoeffs = new double[kernels.size()+1];
+		double [] quadCoeffs = new double[mutableRules.size()+1];
 		if (NormScalingType.NONE.equals(scaleNorm)) {
-			for (int i = 0; i < kernels.size(); i++)
+			for (int i = 0; i < mutableRules.size(); i++)
 				quadCoeffs[i] = 1.0;
 		}
 		else {
 			/* Counts numbers of groundings to scale norm */
-			int[] numGroundings = new int[kernels.size()];
-			for (int i = 0; i < kernels.size(); i++) {
-				Iterator<GroundRule> itr = reasoner.getGroundKernels(kernels.get(i)).iterator();
-				while(itr.hasNext()) {
-					itr.next();
+			int[] numGroundings = new int[mutableRules.size()];
+			for (int i = 0; i < mutableRules.size(); i++) {
+				for (GroundRule rule : groundRuleStore.getGroundRules(mutableRules.get(i))) {
 					numGroundings[i]++;
 				}
 			}
-			
+
 			if (NormScalingType.NUM_GROUNDINGS.equals(scaleNorm)) {
-				for (int i = 0; i < kernels.size(); i++)
+				for (int i = 0; i < mutableRules.size(); i++)
 					quadCoeffs[i] = numGroundings[i];
 			}
 			else if (NormScalingType.INVERSE_NUM_GROUNDINGS.equals(scaleNorm)) {
-				for (int i = 0; i < kernels.size(); i++)
+				for (int i = 0; i < mutableRules.size(); i++)
 					quadCoeffs[i] = (numGroundings[i] > 0.0) ? 1.0 / numGroundings[i] : 0.0;
 			}
 			else
 				throw new IllegalStateException("Unrecognized NormScalingType.");
-			
-			/* 
+
+			/*
 			 * Rescales the coefficients so that the norm has the same value as no
 			 * scaling when all weights are 1.0
 			 */
@@ -195,89 +191,89 @@ abstract public class MaxMargin extends WeightLearningApplication {
 			for (double coeff : quadCoeffs)
 				coeffNorm += coeff * coeff;
 			coeffNorm = Math.sqrt(coeffNorm);
-			double scalar = Math.sqrt(kernels.size()) / coeffNorm;
-			for (int i = 0; i < kernels.size(); i++)
+			double scalar = Math.sqrt(mutableRules.size()) / coeffNorm;
+			for (int i = 0; i < mutableRules.size(); i++)
 				quadCoeffs[i] *= scalar;
 		}
-		
+
 		/* Sets quadratic objective term */
 		log.debug("Quad coeffs: {}", Arrays.toString(quadCoeffs));
-		quadCoeffs[kernels.size()] = (squareSlack) ? slackPenalty : 0.0;
-		normProgram.setQuadraticTerm(quadCoeffs, new double[kernels.size() + 1]);
+		quadCoeffs[mutableRules.size()] = (squareSlack) ? slackPenalty : 0.0;
+		normProgram.setQuadraticTerm(quadCoeffs, new double[mutableRules.size() + 1]);
 	}
-	
+
 	@Override
 	protected void doLearn() {
 		double[] weights;
 		double[] truthIncompatibility;
 		double oracleIncompatibility;
-		
+
 		/* Initializes weights */
-		weights = new double[kernels.size()+1];
-		for (int i = 0; i < kernels.size(); i++)
-			weights[i] = kernels.get(i).getWeight().getWeight();
-		
+		weights = new double[mutableRules.size()+1];
+		for (int i = 0; i < mutableRules.size(); i++)
+			weights[i] = mutableRules.get(i).getWeight();
+
 		/* Computes the observed incompatibility */
-		truthIncompatibility = new double[kernels.size()];
+		truthIncompatibility = new double[mutableRules.size()];
 		for (Map.Entry<RandomVariableAtom, ObservedAtom> e : trainingMap.getTrainingMap().entrySet()) {
 			e.getKey().setValue(e.getValue().getValue());
 		}
-		for (int i = 0; i < kernels.size(); i++) {
-			for (GroundRule gk : reasoner.getGroundKernels(kernels.get(i))) {
-				truthIncompatibility[i] += ((WeightedGroundRule) gk).getIncompatibility();
+		for (int i = 0; i < mutableRules.size(); i++) {
+			for (GroundRule groundRule : groundRuleStore.getGroundRules(mutableRules.get(i))) {
+				truthIncompatibility[i] += ((WeightedGroundRule)groundRule).getIncompatibility();
 			}
 		}
-		
+
 		setupSeparationOracle();
-		
+
 		/* Prepares to begin optimization loop */
 		int iter = 0;
 		double violation = Double.POSITIVE_INFINITY;
-		
+
 		/* Loops to identify separating hyperplane and reoptimize weights */
 		while (iter < maxIter && violation > tolerance) {
-			
+
 			runSeparationOracle();
-			
-			double slack = weights[kernels.size()];
+
+			double slack = weights[mutableRules.size()];
 
 			double loss = evaluateLoss();
-					
+
 			/* The next loop computes constraint coefficients for max margin constraints:
 			 * w * f(y) < min_x w * f(x) - ||x-y|| + \xi
 			 * For current x from separation oracle, this translates to
 			 * w * (f(y) - f(x)) - \xi < -|| x - y ||
-			 * 
+			 *
 			 * loss = ||x - y||
 			 * constraintCoefficients = f(y) - f(x)
 			 */
-			double [] constraintCoefficients = new double[kernels.size() + 1];
+			double [] constraintCoefficients = new double[mutableRules.size() + 1];
 			violation = 0.0;
-			for (int i = 0; i < kernels.size(); i++) {
+			for (int i = 0; i < mutableRules.size(); i++) {
 				oracleIncompatibility = 0.0;
-				
-				for (GroundRule gk : reasoner.getGroundKernels(kernels.get(i)))
-					oracleIncompatibility += ((WeightedGroundRule) gk).getIncompatibility();	
-				
+
+				for (GroundRule groundRule : groundRuleStore.getGroundRules(mutableRules.get(i)))
+					oracleIncompatibility += ((WeightedGroundRule) groundRule).getIncompatibility();
+
 				constraintCoefficients[i] =  truthIncompatibility[i] - oracleIncompatibility;
-				
+
 				violation += weights[i] * constraintCoefficients[i];
 			}
 			violation -= slack;
 			violation += loss;
-			
+
 			log.debug("Violation of most recent constraint: {}", violation);
 			log.debug("Loss at most recent point: {}", loss);
 			log.debug("Slack: {}", slack);
-			
+
 			if (violation > tolerance) {
 				// slack coefficient
-				constraintCoefficients[kernels.size()] = -1.0;
-				
+				constraintCoefficients[mutableRules.size()] = -1.0;
+
 				// add linear constraint weights * truthIncompatility < weights * mpeIncompatibility - loss + \xi
 				normProgram.addInequalityConstraint(constraintCoefficients, -1 * loss);
-				
-				
+
+
 				// optimize with constraint set
 				try {
 					normProgram.solve();
@@ -285,51 +281,52 @@ abstract public class MaxMargin extends WeightLearningApplication {
 				catch (IllegalArgumentException e) {
 					log.error("Norm minimization program failed (IllegalArgumentException). Returning early.");
 					return;
-				} 
+				}
 				catch (IllegalStateException e) {
 					log.error("Norm minimization program failed (IllegalStateException). Returning early.");
 					return;
 				}
-				
+
 				// update weights with new solution
 				weights = normProgram.getSolution();
 				/* Sets the weights to the new solution */
-				for (int i = 0; i < kernels.size(); i++)
-					if (nonnegativeWeights && weights[i] < 0.0)
-						kernels.get(i).setWeight(new NegativeWeight(weights[i]));
-					else 
-						kernels.get(i).setWeight(new PositiveWeight(weights[i]));
-				reasoner.changedGroundKernelWeights();
-				
+				for (int i = 0; i < mutableRules.size(); i++) {
+					if (nonnegativeWeights && weights[i] < 0.0) {
+						mutableRules.get(i).setWeight(weights[i]);
+					} else {
+						mutableRules.get(i).setWeight(weights[i]);
+					}
+				}
+				termGenerator.updateWeights(groundRuleStore, termStore);
+
 				iter++;
 			}
 		}
-		
+
 		log.debug("Number of separation oracle calls: {}", iter);
-		
+
 		tearDownSeparationOracle();
 	}
-	
+
 	/**
 	 * Performs any initialization necessary for the separation oracle.
 	 */
-	abstract protected void setupSeparationOracle();
-	
+	protected abstract void setupSeparationOracle();
+
 	/**
 	 * Sets the current Atom states to
 	 * <p>
 	 * min_y' w * f(y') - L(y, y')
 	 */
-	abstract protected void runSeparationOracle();
-	
+	protected abstract void runSeparationOracle();
+
 	/**
 	 * @return value of L(y, y') for ground truth y and current state y'
 	 */
-	abstract protected double evaluateLoss();
-	
+	protected abstract double evaluateLoss();
+
 	/**
 	 * Undoes {@link #setupSeparationOracle()}.
 	 */
-	abstract protected void tearDownSeparationOracle();
-
+	protected abstract void tearDownSeparationOracle();
 }

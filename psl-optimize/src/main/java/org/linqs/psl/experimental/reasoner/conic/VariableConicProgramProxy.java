@@ -17,8 +17,6 @@
  */
 package org.linqs.psl.experimental.reasoner.conic;
 
-import java.util.Map;
-
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
 import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 import org.linqs.psl.model.rule.GroundRule;
@@ -26,40 +24,42 @@ import org.linqs.psl.reasoner.function.ConstraintTerm;
 import org.linqs.psl.reasoner.function.FunctionComparator;
 import org.linqs.psl.reasoner.function.FunctionSummand;
 
-class VariableConicProgramProxy extends ConicProgramProxy {
-	protected Variable v;
+import java.util.Map;
+
+public class VariableConicProgramProxy extends ConicProgramProxy {
+	protected Variable variable;
 	protected ConstraintConicProgramProxy upperBound;
-	
-	VariableConicProgramProxy(ConicReasoner reasoner, GroundRule gk) {
-		super(reasoner, gk);
-		v = reasoner.program.createNonNegativeOrthantCone().getVariable();
-		FunctionSummand summand = new FunctionSummand(1.0, new ConicReasonerSingleton(v));
+
+	public VariableConicProgramProxy(ConicTermStore termStore, GroundRule rule) {
+		super(termStore, rule);
+
+		variable = termStore.getProgram().createNonNegativeOrthantCone().getVariable();
+		FunctionSummand summand = new FunctionSummand(1.0, new ConicReasonerSingleton(variable));
 		ConstraintTerm con = new ConstraintTerm(summand, FunctionComparator.SmallerThan, 1.0);
-		upperBound = new ConstraintConicProgramProxy(reasoner, con, gk);
+		upperBound = new ConstraintConicProgramProxy(termStore, con, rule);
 	}
-	
-	Variable getVariable() {
-		return v;
+
+	public Variable getVariable() {
+		return variable;
 	}
-	
+
 	@Override
-	void remove() {
+	public void remove() {
 		Map<? extends Variable, Double> vars;
 		double coeff;
-		
+
 		upperBound.remove();
-		
-		for (LinearConstraint lc : v.getLinearConstraints()) {
+
+		for (LinearConstraint lc : variable.getLinearConstraints()) {
 			vars = lc.getVariables();
 			if (vars.size() == 1) {
 				lc.delete();
-			}
-			else {
-				coeff = vars.get(v);
-				lc.setVariable(v, 0.0);
-				lc.setConstrainedValue(lc.getConstrainedValue() - coeff * v.getValue());
+			} else {
+				coeff = vars.get(variable);
+				lc.setVariable(variable, 0.0);
+				lc.setConstrainedValue(lc.getConstrainedValue() - coeff * variable.getValue());
 			}
 		}
-		v.getCone().delete();
+		variable.getCone().delete();
 	}
 }

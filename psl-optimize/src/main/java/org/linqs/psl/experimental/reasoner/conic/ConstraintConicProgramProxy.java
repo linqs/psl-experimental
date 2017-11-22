@@ -27,24 +27,23 @@ import org.linqs.psl.reasoner.function.FunctionSum;
 import org.linqs.psl.reasoner.function.FunctionSummand;
 import org.linqs.psl.reasoner.function.FunctionTerm;
 
-class ConstraintConicProgramProxy extends ConicProgramProxy {
-
+public class ConstraintConicProgramProxy extends ConicProgramProxy {
 	protected LinearConstraint lc = null;
 	protected Variable slackVar = null;
-	
-	ConstraintConicProgramProxy(ConicReasoner reasoner, ConstraintTerm con, GroundRule gk) {
-		super(reasoner, gk);
+
+	public ConstraintConicProgramProxy(ConicTermStore termStore, ConstraintTerm con, GroundRule gk) {
+		super(termStore, gk);
 		updateConstraint(con);
 	}
 
-	void updateConstraint(ConstraintTerm con) {
+	public void updateConstraint(ConstraintTerm con) {
 		Variable v;
-		
+
 		if (lc != null) lc.delete();
-		lc = reasoner.program.createConstraint();
+		lc = termStore.getProgram().createConstraint();
 		FunctionTerm fun = con.getFunction();
 		double constrainedValue = con.getValue();
-		
+
 		if (fun instanceof FunctionSum) {
 			FunctionSum sum = (FunctionSum)fun;
 			for (FunctionSummand summand : sum) {
@@ -57,7 +56,7 @@ class ConstraintConicProgramProxy extends ConicProgramProxy {
 					constrainedValue -= summand.getTerm().getValue() * summand.getCoefficient();
 				}
 				else if (summand.getTerm() instanceof AtomFunctionVariable) {
-					v = reasoner.getVarProxy((AtomFunctionVariable)summand.getTerm()).getVariable();
+					v = termStore.getVarProxy((AtomFunctionVariable)summand.getTerm()).getVariable();
 					lc.setVariable(v, summand.getCoefficient()
 							+ ((lc.getVariables().get(v) != null) ? lc.getVariables().get(v) : 0.0));
 				}
@@ -72,7 +71,7 @@ class ConstraintConicProgramProxy extends ConicProgramProxy {
 				lc.setVariable(v, summand.getCoefficient());
 			}
 			else if (summand.getTerm() instanceof AtomFunctionVariable) {
-				v = reasoner.getVarProxy((AtomFunctionVariable) summand.getTerm()).getVariable();
+				v = termStore.getVarProxy((AtomFunctionVariable) summand.getTerm()).getVariable();
 				lc.setVariable(v, summand.getCoefficient());
 			}
 			else
@@ -80,11 +79,11 @@ class ConstraintConicProgramProxy extends ConicProgramProxy {
 		}
 		else
 			throw new IllegalArgumentException("Currently, only sums and summands are supported!");
-		
+
 		lc.setConstrainedValue(constrainedValue);
 		if (!con.getComparator().equals(FunctionComparator.Equality)) {
 			if (slackVar == null) {
-				slackVar = reasoner.program.createNonNegativeOrthantCone().getVariable();
+				slackVar = termStore.getProgram().createNonNegativeOrthantCone().getVariable();
 				slackVar.setObjectiveCoefficient(0.0);
 			}
 			if (con.getComparator().equals(FunctionComparator.LargerThan))
@@ -99,7 +98,7 @@ class ConstraintConicProgramProxy extends ConicProgramProxy {
 	}
 
 	@Override
-	void remove() {
+	public void remove() {
 		if (lc != null) {
 			lc.delete();
 			lc = null;

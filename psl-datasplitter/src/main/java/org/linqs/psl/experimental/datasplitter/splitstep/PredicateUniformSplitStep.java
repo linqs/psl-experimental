@@ -56,10 +56,10 @@ public class PredicateUniformSplitStep implements SplitStep {
 	}
 
 	/**
-	 * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each 
+	 * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each
 	 * atom as its own group
 	 * @param target Predicate whose groundings to split on
-	 * @param numFolds 
+	 * @param numFolds
 	 */
 	public PredicateUniformSplitStep(StandardPredicate target, int numFolds) {
 		this(target, numFolds, NO_GROUP);
@@ -71,7 +71,7 @@ public class PredicateUniformSplitStep implements SplitStep {
 		Collection<Set<GroundAtom>> groups;
 		List<Collection<Partition>> splits = new ArrayList<Collection<Partition>>();
 
-		Set<GroundAtom> allAtoms = Queries.getAllAtoms(inputDB, target);
+		List<GroundAtom> allAtoms = Queries.getAllAtoms(inputDB, target);
 
 		if (groupBy == NO_GROUP) {
 			groups = new ArrayList<Set<GroundAtom>>(allAtoms.size());
@@ -90,12 +90,12 @@ public class PredicateUniformSplitStep implements SplitStep {
 				groupMap.get(key).add(atom);
 			}
 			groups = groupMap.values();
-		}		
+		}
 
 		List<Partition> allPartitions = new ArrayList<Partition>();
 		List<Inserter> inserters = new ArrayList<Inserter>();
 		for (int i = 0; i < numFolds; i++) {
-			Partition nextPartition = inputDB.getDataStore().getNewPartition(); 
+			Partition nextPartition = inputDB.getDataStore().getNewPartition();
 			allPartitions.add(nextPartition);
 			inserters.add(inputDB.getDataStore().getInserter(target, nextPartition));
 		}
@@ -104,7 +104,7 @@ public class PredicateUniformSplitStep implements SplitStep {
 
 		for (int i = 0; i < numFolds; i++) {
 			Set<Partition> partitions = new TreeSet<Partition>();
-			for (int j = 0; j < numFolds; j++) 
+			for (int j = 0; j < numFolds; j++)
 				if (j != i)
 					partitions.add(allPartitions.get(j));
 			splits.add(partitions);
@@ -113,13 +113,13 @@ public class PredicateUniformSplitStep implements SplitStep {
 		return splits;
 	}
 
-	private void insertIntoPartitions(Collection<Set<GroundAtom>> groups, 
+	private void insertIntoPartitions(Collection<Set<GroundAtom>> groups,
 			List<Inserter> inserters, Random random) {
-		
+
 		ArrayList<Set<GroundAtom>> groupList = new ArrayList<Set<GroundAtom>>(groups.size());
 		groupList.addAll(groups);
 		Collections.shuffle(groupList, random);
-		
+
 		int j = 0;
 		for (Set<GroundAtom> group : groupList) {
 			for (GroundAtom atom : group)

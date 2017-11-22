@@ -17,10 +17,6 @@
  */
 package org.linqs.psl.experimental.reasoner.conic;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
-
 import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
 import org.linqs.psl.experimental.optimizer.conic.program.RotatedSecondOrderCone;
@@ -35,7 +31,11 @@ import org.linqs.psl.reasoner.function.FunctionTerm;
 import org.linqs.psl.reasoner.function.MaxFunction;
 import org.linqs.psl.reasoner.function.PowerOfTwo;
 
-class FunctionConicProgramProxy extends ConicProgramProxy {
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
+
+public class FunctionConicProgramProxy extends ConicProgramProxy {
 
 	/* Variables when using any cone */
 	protected Variable featureVar;
@@ -48,86 +48,86 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 	/* Constraints when using a rotated second-order cone */
 	protected LinearConstraint holdOtherOuterVar;
 	protected Vector<ConstraintConicProgramProxy> constraints;
-	protected boolean initialized = false;
+	protected boolean initialized;
 	protected boolean squared;
-	
+
 	protected static final Set<ConeType> RSOCType;
 	static {
 		RSOCType = new HashSet<ConeType>();
 		RSOCType.add(ConeType.RotatedSecondOrderCone);
 	}
-	
-	FunctionConicProgramProxy(ConicReasoner reasoner, WeightedGroundRule gk) {
-		super(reasoner, gk);
+
+	public FunctionConicProgramProxy(ConicTermStore termStore, WeightedGroundRule gk) {
+		super(termStore, gk);
+		initialized = false;
 		updateGroundKernel(gk);
 	}
-	
-	protected void initialize() {
-		if (!initialized) {
-			constraints = new Vector<ConstraintConicProgramProxy>(1);
-			
-			if (squared) {
-				/* If the solver supports rotated second-order cones, uses them... */
-				if (reasoner.solver.supportsConeTypes(RSOCType)) {
-					RotatedSecondOrderCone rsoc = reasoner.program.createRotatedSecondOrderCone(3);
-					for (Variable v : rsoc.getVariables()) {
-						if (v.equals(rsoc.getNthVariable()))
-							rotSquaredFeatureVar = v;
-						else if (v.equals(rsoc.getNMinus1stVariable()))
-							otherOuterVar = v;
-						else
-							featureVar = v;
-					}
 
-					featureVar.setObjectiveCoefficient(0.0);
-					holdOtherOuterVar = reasoner.program.createConstraint();
-					holdOtherOuterVar.setVariable(otherOuterVar, 1.0);
-					holdOtherOuterVar.setConstrainedValue(0.5);
-				}
-				/* Else makes something equivalent using regular second-order cones... */
-				else {
-					featureVar = reasoner.program.createNonNegativeOrthantCone().getVariable();
-					featureVar.setObjectiveCoefficient(0.0);
-					squaredFeatureVar = reasoner.program.createNonNegativeOrthantCone().getVariable();
-					SecondOrderCone soc = reasoner.program.createSecondOrderCone(3);
-					outerSquaredVar = soc.getNthVariable();
-					for (Variable v : soc.getVariables()) {
-						if (!v.equals(outerSquaredVar))
-							if (innerFeatureVar == null)
-								innerFeatureVar = v;
-							else
-								innerSquaredVar = v;
-					}
-					
-					innerFeatureCon = reasoner.program.createConstraint();
-					innerFeatureCon.setVariable(featureVar, 1.0);
-					innerFeatureCon.setVariable(innerFeatureVar, -1.0);
-					innerFeatureCon.setConstrainedValue(0.0);
-					
-					innerSquaredCon = reasoner.program.createConstraint();
-					innerSquaredCon.setVariable(innerSquaredVar, 1.0);
-					innerSquaredCon.setVariable(squaredFeatureVar, 0.5);
-					innerSquaredCon.setConstrainedValue(0.5);
-					
-					outerSquaredCon = reasoner.program.createConstraint();
-					outerSquaredCon.setVariable(outerSquaredVar, 1.0);
-					outerSquaredCon.setVariable(squaredFeatureVar, -0.5);
-					outerSquaredCon.setConstrainedValue(0.5);
-				}
-			}
-			else
-				featureVar = reasoner.program.createNonNegativeOrthantCone().getVariable();
-			
-			initialized = true;
-		}
-		else {
+	protected void initialize() {
+		if (initialized) {
 			throw new IllegalStateException("ConicProgramProxy has already been initialized.");
 		}
-	}
-	
-	protected void setWeight(double weight) {
+
+		constraints = new Vector<ConstraintConicProgramProxy>(1);
+
 		if (squared) {
-			if (reasoner.solver.supportsConeTypes(RSOCType))
+			/* If the solver supports rotated second-order cones, uses them... */
+			if (termStore.getSolver().supportsConeTypes(RSOCType)) {
+				RotatedSecondOrderCone rsoc = termStore.getProgram().createRotatedSecondOrderCone(3);
+				for (Variable v : rsoc.getVariables()) {
+					if (v.equals(rsoc.getNthVariable()))
+						rotSquaredFeatureVar = v;
+					else if (v.equals(rsoc.getNMinus1stVariable()))
+						otherOuterVar = v;
+					else
+						featureVar = v;
+				}
+
+				featureVar.setObjectiveCoefficient(0.0);
+				holdOtherOuterVar = termStore.getProgram().createConstraint();
+				holdOtherOuterVar.setVariable(otherOuterVar, 1.0);
+				holdOtherOuterVar.setConstrainedValue(0.5);
+			}
+			/* Else makes something equivalent using regular second-order cones... */
+			else {
+				featureVar = termStore.getProgram().createNonNegativeOrthantCone().getVariable();
+				featureVar.setObjectiveCoefficient(0.0);
+				squaredFeatureVar = termStore.getProgram().createNonNegativeOrthantCone().getVariable();
+				SecondOrderCone soc = termStore.getProgram().createSecondOrderCone(3);
+				outerSquaredVar = soc.getNthVariable();
+				for (Variable v : soc.getVariables()) {
+					if (!v.equals(outerSquaredVar))
+						if (innerFeatureVar == null)
+							innerFeatureVar = v;
+						else
+							innerSquaredVar = v;
+				}
+
+				innerFeatureCon = termStore.getProgram().createConstraint();
+				innerFeatureCon.setVariable(featureVar, 1.0);
+				innerFeatureCon.setVariable(innerFeatureVar, -1.0);
+				innerFeatureCon.setConstrainedValue(0.0);
+
+				innerSquaredCon = termStore.getProgram().createConstraint();
+				innerSquaredCon.setVariable(innerSquaredVar, 1.0);
+				innerSquaredCon.setVariable(squaredFeatureVar, 0.5);
+				innerSquaredCon.setConstrainedValue(0.5);
+
+				outerSquaredCon = termStore.getProgram().createConstraint();
+				outerSquaredCon.setVariable(outerSquaredVar, 1.0);
+				outerSquaredCon.setVariable(squaredFeatureVar, -0.5);
+				outerSquaredCon.setConstrainedValue(0.5);
+			}
+		} else {
+			featureVar = termStore.getProgram().createNonNegativeOrthantCone().getVariable();
+		}
+
+		initialized = true;
+	}
+
+	private void setWeight(double weight) {
+		if (squared) {
+			if (termStore.getSolver().supportsConeTypes(RSOCType))
 				rotSquaredFeatureVar.setObjectiveCoefficient(weight);
 			else
 				squaredFeatureVar.setObjectiveCoefficient(weight);
@@ -135,9 +135,9 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 		else
 			featureVar.setObjectiveCoefficient(weight);
 	}
-	
-	void updateGroundKernelWeight(WeightedGroundRule gk) {
-		if (gk.getWeight().getWeight() == 0) {
+
+	public void updateGroundKernelWeight(WeightedGroundRule gk) {
+		if (gk.getWeight() == 0) {
 			if (initialized)
 				remove();
 		}
@@ -145,12 +145,12 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 			if (!initialized)
 				updateGroundKernel(gk);
 			else
-				setWeight(gk.getWeight().getWeight());
+				setWeight(gk.getWeight());
 		}
 	}
-	
-	void updateGroundKernel(WeightedGroundRule gk) {
-		if (gk.getWeight().getWeight() == 0) {
+
+	public void updateGroundKernel(WeightedGroundRule gk) {
+		if (gk.getWeight() == 0) {
 			if (initialized)
 				remove();
 		}
@@ -163,12 +163,12 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 			}
 			else
 				nowSquared = false;
-			
+
 			if (squared != nowSquared)
 				remove();
-			
+
 			squared = nowSquared;
-			
+
 			if (!initialized) {
 				initialize();
 			}
@@ -176,14 +176,14 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 				deleteConstraints();
 			}
 			addFunctionTerm(function);
-			setWeight(gk.getWeight().getWeight());
+			setWeight(gk.getWeight());
 		}
 	}
-	
+
 	/**
 	 * Represents the objective function term as one or more constraints on
 	 * featureVar and adds those constraints to the conic program.
-	 *  
+	 *
 	 * @param fun  the objective term to add to the conic program
 	 */
 	protected void addFunctionTerm(FunctionTerm fun) {
@@ -194,9 +194,9 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 		else if (!fun.isConstant() || fun.getValue() != 0.0) {
 			ConstraintTerm con;
 			FunctionSummand featureSummand;
-			
+
 			featureSummand = new FunctionSummand(-1.0, new ConicReasonerSingleton(featureVar));
-			
+
 			if (fun.isConstant()) {
 				con = new ConstraintTerm(featureSummand, FunctionComparator.SmallerThan, -1*fun.getValue());
 			}
@@ -216,17 +216,17 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 			}
 			else
 				throw new IllegalArgumentException("Unsupported FunctionTerm: " + fun);
-			
-			constraints.add(new ConstraintConicProgramProxy(reasoner, con, kernel));
+
+			constraints.add(new ConstraintConicProgramProxy(termStore, con, rule));
 		}
 	}
 
 	@Override
-	void remove() {
+	public void remove() {
 		if (initialized) {
 			deleteConstraints();
 			if (squared) {
-				if (reasoner.solver.supportsConeTypes(RSOCType)) {
+				if (termStore.getSolver().supportsConeTypes(RSOCType)) {
 					holdOtherOuterVar.delete();
 					rotSquaredFeatureVar.getCone().delete();
 					rotSquaredFeatureVar = null;
@@ -252,11 +252,11 @@ class FunctionConicProgramProxy extends ConicProgramProxy {
 				featureVar.getCone().delete();
 				featureVar = null;
 			}
-			
+
 			initialized = false;
 		}
 	}
-	
+
 	protected void deleteConstraints() {
 		for (ConstraintConicProgramProxy con : constraints)
 			con.remove();

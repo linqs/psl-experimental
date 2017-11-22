@@ -44,9 +44,9 @@ import org.linqs.psl.model.term.Variable;
  * {@link Constant} arguments to the QueryAtom, ground terms associated with
  * each GroundAtom are generated from the supplied {@link Partition}
  * collections.
- * 
+ *
  * @author jay
- * 
+ *
  */
 public class QueryAtomsBuildDBStep implements BuildDBStep {
 
@@ -54,14 +54,10 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 	protected Map<QueryAtom, Map<Variable, Set<Constant>>> queryAtoms = null;
 
 	/**
-	 * 
-	 * @param toClose
-	 *            the set of predicates that will be closed for the experimental
-	 *            task
-	 * @param queryAtoms
-	 *            a map, where each entry is a {@link QueryAtom} and
-	 *            substitution map, corresponding to {@link Variable}s in the
-	 *            QueryAtom. Non-variable terms will be ignored.
+	 *
+	 * @param toClose the set of predicates that will be closed for the experimental task
+	 * @param queryAtoms a map, where each entry is a {@link QueryAtom} and substitution map,
+	 *  corresponding to {@link Variable}s in the QueryAtom. Non-variable terms will be ignored.
 	 */
 	public QueryAtomsBuildDBStep(Set<StandardPredicate> toClose,
 			Map<QueryAtom, Map<Variable, Set<Constant>>> queryAtoms) {
@@ -73,8 +69,8 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 	/*
 	 * Step 0: Get inverse partition set and generate a Database for each Step
 	 * 1: Deal with queryAtoms - Iterate over Map, for each QueryAtom:
-	 * 
-	 * 
+	 *
+	 *
 	 * /* A helper function for populating all predicates associated with a
 	 * QueryAtom into the Database. - Extract predicate - Identify Variable
 	 * positions - Query for all instances of that Predicate in the inverse
@@ -96,7 +92,7 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 				varArgs[i] = 1;
 			}
 		}
-		for (GroundAtom grAtom : Queries.getAllAtoms(inverseDB, qPredicate)) {
+		for (GroundAtom grAtom : Queries.getAllAtoms(inverseDB, (StandardPredicate)qPredicate)) {
 			for (int i = 0; i < qTerms.length; i++) {
 				if (varArgs[i] == 0) {
 					qTerms[i] = grAtom.getArguments()[i];
@@ -109,14 +105,14 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 	@Override
 	/**
 	 * Produces a list of {@link DBDefinition} objects, twice the length of the input list of Partition-Collections.
-	 * The elements of the list alternate between "Task" DBDefinitions for running an experiment and "Truth" DBDefinitions for evaluation 
-	 * The data included in these DBDefinitions will correspond to the arguments supplied in the constructor. 
-	 * 
+	 * The elements of the list alternate between "Task" DBDefinitions for running an experiment and "Truth" DBDefinitions for evaluation
+	 * The data included in these DBDefinitions will correspond to the arguments supplied in the constructor.
+	 *
 	 * The Truth database will be the inverse of a Partition-collection relative to all Partitions found in the List of Partition-Collections
-	 * 
-	 * The Task database will include the Predicates specified via QueryAtoms passed to the constructor. 
-	 * Variable arguments to each QueryAtom will be substituted using the substitution map provided to the constructor, while the ground terms in 
-	 * the QueryAtom will correspond to GroundAtoms found in the Truth Database.  Thus, targets in the "Task" DBDefinition will correspond to all 
+	 *
+	 * The Task database will include the Predicates specified via QueryAtoms passed to the constructor.
+	 * Variable arguments to each QueryAtom will be substituted using the substitution map provided to the constructor, while the ground terms in
+	 * the QueryAtom will correspond to GroundAtoms found in the Truth Database.  Thus, targets in the "Task" DBDefinition will correspond to all
 	 * instances of each QueryAtom predicate in the truth data, with non-ground (Variable) terms substituted using the provided Map.
 	 */
 	public List<DBDefinition> getDatabaseDefinitions(Database inputDB,
@@ -131,14 +127,14 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 			//generate the inverse of this Collection of Partitions, which we assume will contain all "truth" data
 			List<Partition> inversePartitions = PartitionSetUtils.invertPartitions(pL, allPartitions);
 
-			//prepare databases for the truth data and the task data 
+			//prepare databases for the truth data and the task data
 			Partition truthWrPartition = dStore.getNewPartition();
 			Partition taskWrPartition = dStore.getNewPartition();
 			Database truthDB = dStore.getDatabase(truthWrPartition,
 					(Partition[]) inversePartitions.toArray());
 			Database taskDB = dStore.getDatabase(taskWrPartition, toClose,
 					(Partition[]) pL.toArray());
-			
+
 			//iterate over all QueryAtom, substitution pairs specified to the constructor, performing query/substitution
 			for (Entry<QueryAtom, Map<Variable, Set<Constant>>> e : queryAtoms.entrySet()) {
 				addQueryAtomGroundings(truthDB, taskDB, e.getKey(),

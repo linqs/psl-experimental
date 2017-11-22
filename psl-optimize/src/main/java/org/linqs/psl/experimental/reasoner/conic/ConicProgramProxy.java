@@ -18,19 +18,20 @@
 package org.linqs.psl.experimental.reasoner.conic;
 
 import org.linqs.psl.model.rule.GroundRule;
+import org.linqs.psl.reasoner.term.Term;
 
-abstract class ConicProgramProxy {
-	protected final ConicReasoner reasoner;
-	protected final GroundRule kernel;
-	
-	ConicProgramProxy(ConicReasoner reasoner, GroundRule kernel) {
-		this.reasoner = reasoner;
-		this.kernel = kernel;
+public abstract class ConicProgramProxy implements Term {
+	protected final ConicTermStore termStore;
+	protected final GroundRule rule;
+
+	public ConicProgramProxy(ConicTermStore termStore, GroundRule rule) {
+		this.termStore = termStore;
+		this.rule = rule;
 	}
-	
+
 	public GroundRule getGroundKernel() {
-		return kernel;
+		return rule;
 	}
-	
-	abstract void remove();
+
+	public abstract void remove();
 }

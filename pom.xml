@@ -39,8 +39,8 @@
 	</organization>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<psl-core-version>2.0.0</psl-core-version>
-		<psl-utils-version>1.0.0</psl-utils-version>
+		<psl-core-version>2.1.0-SNAPSHOT</psl-core-version>
+		<psl-utils-version>1.1.0-SNAPSHOT</psl-utils-version>
 	</properties>
 
 	<modules>
