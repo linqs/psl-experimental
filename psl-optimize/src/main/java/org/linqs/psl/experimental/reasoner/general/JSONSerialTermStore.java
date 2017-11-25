@@ -80,8 +80,13 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	 * update all the variables (ground atoms).
 	 */
 	public void deserialize(BufferedReader reader) {
-		// TODO(eriq)
-		throw new UnsupportedOperationException();
+		Gson gson = new Gson();
+		Input input = gson.fromJson(reader, Input.class);
+
+		// Update the random variable atoms with their new values.
+		for (Map.Entry<String, Double> entry : input.solution.entrySet()) {
+			variableIds.getKey(entry.getKey()).setValue(entry.getValue().doubleValue());
+		}
 	}
 
 	@Override
@@ -153,5 +158,9 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 			squared = term.isSquared();
 			weight = term.getWeight();
 		}
+	}
+
+	private static class Input {
+		public Map<String, Double> solution;
 	}
 }
