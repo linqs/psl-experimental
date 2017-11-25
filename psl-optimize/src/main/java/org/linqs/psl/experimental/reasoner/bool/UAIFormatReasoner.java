@@ -44,10 +44,10 @@ import java.util.Map;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class UAIFormatReasoner extends ExecutableReasoner {
+	public static final String BASE_FILENAME = "model.uai";
+
 	/**
 	 * Prefix of property keys used by this class.
-	 *
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "uaiformatreasoner";
 
@@ -82,23 +82,19 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 	private final Task task;
 	private final int seed;
 
-	public UAIFormatReasoner(ConfigBundle config) {
-		super(config);
+	public UAIFormatReasoner(ConfigBundle config, String executablePath) {
+		super(executablePath, BASE_FILENAME, null, null);
 
 		task = (Task)config.getEnum(TASK_KEY, TASK_DEFAULT);
 		seed = config.getInt(SEED_KEY, SEED_DEFAULT);
-	}
 
-	@Override
-	protected List<String> getArgs() {
-		List<String> args = new ArrayList<String>();
-
-		args.add(getModelFileName());
-		args.add("no.evid");
-		args.add(Integer.toString(seed));
-		args.add(task.toString());
-
-		return args;
+		this.executableOutputPath = BASE_FILENAME + "."  + task.toString();
+		this.args = new String[]{
+				BASE_FILENAME,
+				"no.evid",
+				Integer.toString(seed),
+				task.toString()
+		};
 	}
 
 	@Override
@@ -265,16 +261,6 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 				rvBlocks[i][(exactlyOne[i]) ? assignment : assignment - 1].setValue(1.0);
 			}
 		}
-	}
-
-	@Override
-	protected String getModelFileName() {
-		return "model.uai";
-	}
-
-	@Override
-	protected String getResultsFileName() {
-		return "model.uai." + task.toString();
 	}
 
 	@Override
