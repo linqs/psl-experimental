@@ -17,33 +17,22 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-// TODO(eriq):
 import org.linqs.psl.application.groundrulestore.GroundRuleStore;
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
+import org.linqs.psl.model.predicate.SpecialPredicate;
 import org.linqs.psl.model.rule.GroundRule;
-import org.linqs.psl.model.rule.UnweightedGroundRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.model.rule.arithmetic.AbstractGroundArithmeticRule;
+import org.linqs.psl.model.rule.arithmetic.UnweightedGroundArithmeticRule;
+import org.linqs.psl.model.rule.arithmetic.WeightedGroundArithmeticRule;
 import org.linqs.psl.model.rule.logical.AbstractGroundLogicalRule;
 import org.linqs.psl.model.rule.logical.UnweightedGroundLogicalRule;
 import org.linqs.psl.model.rule.logical.WeightedGroundLogicalRule;
-import org.linqs.psl.reasoner.function.AtomFunctionVariable;
-import org.linqs.psl.reasoner.function.ConstantNumber;
-import org.linqs.psl.reasoner.function.ConstraintTerm;
-import org.linqs.psl.reasoner.function.FunctionSingleton;
-import org.linqs.psl.reasoner.function.FunctionSum;
-import org.linqs.psl.reasoner.function.FunctionSummand;
-import org.linqs.psl.reasoner.function.FunctionTerm;
-import org.linqs.psl.reasoner.function.MaxFunction;
-import org.linqs.psl.reasoner.function.PowerOfTwo;
+import org.linqs.psl.reasoner.function.FunctionComparator;
 import org.linqs.psl.reasoner.term.TermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A TermGenerator for terms meant to be serialized via JSON.
@@ -80,7 +69,7 @@ public class JSONSerialTermGenerator implements TermGenerator<SimpleTerm> {
 
 	private SimpleTerm createLogicalTerm(AbstractGroundLogicalRule rule) {
 		boolean hard = (rule instanceof UnweightedGroundLogicalRule);
-		boolean squared = !hard && (((WeightedGroundLogicalRule)rule).isSquared()) ;
+		boolean squared = !hard && (((WeightedGroundLogicalRule)rule).isSquared());
 		double weight = hard ? -1 : ((WeightedGroundLogicalRule)rule).getWeight();
 
 		SimpleTerm term = new SimpleTerm(hard, squared, weight, 1.0);
@@ -110,7 +99,34 @@ public class JSONSerialTermGenerator implements TermGenerator<SimpleTerm> {
 	}
 
 	private SimpleTerm createArithmeticTerm(AbstractGroundArithmeticRule rule) {
-		// TODO(eriq)
-		throw new UnsupportedOperationException();
+		boolean hard = (rule instanceof UnweightedGroundArithmeticRule);
+		boolean squared = !hard && (((WeightedGroundArithmeticRule)rule).isSquared());
+		double weight = hard ? -1 : ((WeightedGroundArithmeticRule)rule).getWeight();
+
+		SimpleTerm term = new SimpleTerm(hard, squared, weight, 0.0);
+
+		// We will have to switch around some signs depending on the comparison operator.
+		// Remember that we don't have a equality comparator.
+		boolean largerThan = FunctionComparator.LargerThan.equals(rule.getComparator());
+
+		double[] coefficients = rule.getCoefficients();
+		GroundAtom[] atoms = rule.getOrderedAtoms();
+
+		// Add up all the atoms.
+		for (int i = 0; i < coefficients.length; i++) {
+			// Skip any special predicates.
+			if (atoms[i].getPredicate() instanceof SpecialPredicate) {
+				continue;
+			}
+
+			double modifier = largerThan ? -1.0 : 1.0;
+			term.add(atoms[i], modifier * coefficients[i]);
+		}
+
+		// Add in the constant (sign swap since it starts on the RHS).
+		double modifier = largerThan ? 1.0 : -1.0;
+		term.addConstant(modifier * rule.getConstant());
+
+		return term;
 	}
 }

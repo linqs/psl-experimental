@@ -17,12 +17,9 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-// TODO(eriq):
 import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.GroundRule;
-import org.linqs.psl.model.rule.WeightedGroundRule;
-import org.linqs.psl.reasoner.function.AtomFunctionVariable;
 import org.linqs.psl.reasoner.term.MemoryTermStore;
 import org.linqs.psl.reasoner.term.TermStore;
 
@@ -34,8 +31,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,16 +55,17 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	 */
 	public void serialize(BufferedWriter writer) {
 		List<OutputTerm> objectiveSummands = new ArrayList<OutputTerm>();
+		List<OutputTerm> constraints = new ArrayList<OutputTerm>();
 
 		for (SimpleTerm term : this) {
 			if (term.isHard()) {
-				// TODO(eriq)
+				constraints.add(new OutputTerm(term));
 			} else {
 				objectiveSummands.add(new OutputTerm(term));
 			}
 		}
 
-		Output output = new Output(variableIds.values(), objectiveSummands);
+		Output output = new Output(variableIds.values(), objectiveSummands, constraints);
 
 		Gson gson = new Gson();
 		gson.toJson(output, writer);
@@ -115,43 +111,43 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	private static class Output {
 		public Set<String> variables;
 
-		// TODO(eriq): Better format (json)
 		public List<OutputTerm> objectiveSummands;
 
-		// TODO(eriq): constraints
-		public List<String> constraints;
+		// All formulated such that the summation of each term is <= 0.
+		public List<OutputTerm> constraints;
 
-		public Output(Set<String> variables, List<OutputTerm> objectiveSummands) {
+		public Output(Set<String> variables, List<OutputTerm> objectiveSummands, List<OutputTerm> constraints) {
 			this.variables = variables;
 			this.objectiveSummands = objectiveSummands;
+			this.constraints = constraints;
 		}
 	}
 
 	private class OutputTerm {
 		public double constant;
 		public String[] variables;
-		public boolean[] signs;
+		public double[] coefficients;
 		public boolean squared;
 		public double weight;
 
-		public OutputTerm(double constant, String[] variables, boolean[] signs,
+		public OutputTerm(double constant, String[] variables, double[] coefficients,
 				boolean squared, double weight) {
 			this.constant = constant;
 			this.variables = variables;
-			this.signs = signs;
+			this.coefficients = coefficients;
 			this.squared = squared;
 			this.weight = weight;
 		}
 
 		public OutputTerm(SimpleTerm term) {
 			variables = new String[term.size()];
-			signs = new boolean[term.size()];
+			coefficients = new double[term.size()];
 
 			List<RandomVariableAtom> rawAtoms = term.getAtoms();
-			List<Boolean> rawSigns = term.getSigns();
+			List<Double> rawCoefficients = term.getCoefficients();
 			for (int i = 0; i < term.size(); i++) {
 				variables[i] = variableIds.get(rawAtoms.get(i));
-				signs[i] = rawSigns.get(i).booleanValue();
+				coefficients[i] = rawCoefficients.get(i).doubleValue();
 			}
 
 			constant = term.getConstant();

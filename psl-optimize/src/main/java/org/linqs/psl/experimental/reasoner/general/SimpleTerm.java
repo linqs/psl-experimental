@@ -17,33 +17,18 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-// TODO(eriq):
-import org.linqs.psl.application.groundrulestore.GroundRuleStore;
-import org.linqs.psl.config.ConfigBundle;
+import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
-import org.linqs.psl.model.rule.GroundRule;
-import org.linqs.psl.model.rule.UnweightedGroundRule;
-import org.linqs.psl.model.rule.WeightedGroundRule;
-import org.linqs.psl.reasoner.function.AtomFunctionVariable;
-import org.linqs.psl.reasoner.function.ConstantNumber;
-import org.linqs.psl.reasoner.function.ConstraintTerm;
-import org.linqs.psl.reasoner.function.FunctionSingleton;
-import org.linqs.psl.reasoner.function.FunctionSum;
-import org.linqs.psl.reasoner.function.FunctionSummand;
-import org.linqs.psl.reasoner.function.FunctionTerm;
-import org.linqs.psl.reasoner.function.MaxFunction;
-import org.linqs.psl.reasoner.function.PowerOfTwo;
 import org.linqs.psl.reasoner.term.Term;
-import org.linqs.psl.reasoner.term.TermGenerator;
-import org.linqs.psl.reasoner.term.TermStore;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * A TermGenerator for terms meant to be serialized via JSON.
+ * Simple terms for oprimization.
+ * These terms are just simple summations and we want to minimize them.
  */
 public class SimpleTerm implements Term {
 	private double constant;
@@ -52,7 +37,7 @@ public class SimpleTerm implements Term {
 	private double weight;
 
 	private List<RandomVariableAtom> atoms;
-	private List<Boolean> signs;
+	private List<Double> coefficients;
 
 	public SimpleTerm(boolean hard, boolean squared, double weight, double constant) {
 		this.hard = hard;
@@ -61,7 +46,7 @@ public class SimpleTerm implements Term {
 		this.constant = constant;
 
 		atoms = new ArrayList<RandomVariableAtom>();
-		signs = new ArrayList<Boolean>();
+		coefficients = new ArrayList<Double>();
 	}
 
 	public void addConstant(double value) {
@@ -76,9 +61,25 @@ public class SimpleTerm implements Term {
 		}
 	}
 
+	public void addConstant(ObservedAtom atom, double coefficient) {
+		addConstant(atom.getValue() * coefficient);
+	}
+
 	public void addAtom(RandomVariableAtom atom, boolean isPositive) {
+		addAtom(atom, isPositive ? 1.0 : -1.0);
+	}
+
+	public void addAtom(RandomVariableAtom atom, double coefficient) {
 		atoms.add(atom);
-		signs.add(isPositive);
+		coefficients.add(coefficient);
+	}
+
+	public void add(GroundAtom atom, double coefficient) {
+		if (atom instanceof ObservedAtom) {
+			addConstant((ObservedAtom)atom, coefficient);
+		} else {
+			addAtom((RandomVariableAtom)atom, coefficient);
+		}
 	}
 
 	public double getConstant() {
@@ -101,8 +102,8 @@ public class SimpleTerm implements Term {
 		return Collections.unmodifiableList(atoms);
 	}
 
-	public List<Boolean> getSigns() {
-		return Collections.unmodifiableList(signs);
+	public List<Double> getCoefficients() {
+		return Collections.unmodifiableList(coefficients);
 	}
 
 	public int size() {
@@ -124,12 +125,8 @@ public class SimpleTerm implements Term {
 		builder.append(constant);
 
 		for (int i = 0; i < atoms.size(); i++) {
-			if (signs.get(i).booleanValue()) {
-				builder.append(" + ");
-			} else {
-				builder.append(" - ");
-			}
-
+			builder.append(coefficients.get(i));
+			builder.append(" * ");
 			builder.append(atoms.get(i));
 		}
 
@@ -140,7 +137,7 @@ public class SimpleTerm implements Term {
 		if (!hard) {
 			builder.append(" )");
 		}
-			
+
 		return builder.toString();
 	}
 }

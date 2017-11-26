@@ -48,22 +48,25 @@ def buildConstraints(problem, variableMap):
     for _, variable in variableMap.items():
         constraints += [0.0 <= variable, variable <= 1.0]
 
-    # TODO(eriq): Hard rules
+    for term in problem['constraints']:
+        localObjective = buildLocalObjective(term, variableMap)
+        constraints.append(localObjective <= 0.0)
 
     return constraints
+
+def buildLocalObjective(term, variableMap):
+    localObjective = term['constant']
+
+    for i in range(len(term['variables'])):
+        localObjective += (term['coefficients'][i] * variableMap[term['variables'][i]])
+
+    return localObjective
 
 def buildObjective(problem, variableMap):
     objective = 0.0
 
     for term in problem['objectiveSummands']:
-        localObjective = term['constant']
-
-        for i in range(len(term['variables'])):
-            sign = 1.0
-            if (not term['signs'][i]):
-                sign = -1.0
-
-            localObjective += (sign * variableMap[term['variables'][i]])
+        localObjective = buildLocalObjective(term, variableMap)
 
         if (term['squared']):
             cvxpy.square(localObjective)
