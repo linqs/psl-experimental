@@ -155,11 +155,11 @@ public class Mosek implements ConicProgramSolver {
 			task.putdouparam(mosek.Env.dparam.intpnt_tol_dfeas, dFeasTol);
 			task.putdouparam(mosek.Env.dparam.intpnt_co_tol_dfeas, dFeasTol);
 
-			task.putintparam(mosek.Env.iparam.intpnt_num_threads, numThreads);
+			task.putintparam(mosek.Env.iparam.num_threads, numThreads);
 			task.putintparam(mosek.Env.iparam.intpnt_solve_form, solveForm.value);
 
 			// Create the variables and sets the objective coefficients.
-			task.append(mosek.Env.accmode.var, (int) x.size());
+			task.appendvars((int)x.size());
 			for (int i = 0; i < x.size(); i++) {
 				task.putcj(i, c.getQuick(i));
 			}
@@ -209,7 +209,7 @@ public class Mosek implements ConicProgramSolver {
 
 			// Set the linear constraints.
 			Set<LinearConstraint> constraints = program.getConstraints();
-			task.append(mosek.Env.accmode.con, constraints.size());
+			task.appendcons(constraints.size());
 
 			Map<Variable, Double> variables;
 			int listIndex, constraintIndex;
@@ -225,7 +225,7 @@ public class Mosek implements ConicProgramSolver {
 					indexList[listIndex] = program.getIndex(e.getKey());
 					valueList[listIndex++] = e.getValue();
 				}
-				task.putavec(mosek.Env.accmode.con, constraintIndex, indexList, valueList);
+				task.putarow(constraintIndex, indexList, valueList);
 				task.putbound(mosek.Env.accmode.con, constraintIndex, Env.boundkey.fx,b.getQuick(constraintIndex), b.getQuick(constraintIndex));
 			}
 
@@ -239,8 +239,7 @@ public class Mosek implements ConicProgramSolver {
 			task.solutionsummary(mosek.Env.streamtype.msg);
 
 			mosek.Env.solsta solsta[] = new mosek.Env.solsta[1];
-			mosek.Env.prosta prosta[] = new mosek.Env.prosta[1];
-			task.getsolutionstatus(mosek.Env.soltype.itr, prosta, solsta);
+			task.getsolsta(mosek.Env.soltype.itr, solsta);
 
 			double[] solution = new double[A.columns()];
 			task.getsolutionslice(
