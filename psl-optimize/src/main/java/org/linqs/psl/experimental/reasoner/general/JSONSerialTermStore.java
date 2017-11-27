@@ -39,14 +39,12 @@ import java.util.Set;
  * problem to/from JSON.
  */
 public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
-	public static final String ID_PRRFIX = "_";
-
-	private BidiMap<RandomVariableAtom, String> variableIds;
+	private BidiMap<RandomVariableAtom, Integer> variableIds;
 
 	public JSONSerialTermStore() {
 		super();
 
-		variableIds = new DualHashBidiMap<RandomVariableAtom, String>();
+		variableIds = new DualHashBidiMap<RandomVariableAtom, Integer>();
 	}
 
 	/**
@@ -80,7 +78,7 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 		Input input = gson.fromJson(reader, Input.class);
 
 		// Update the random variable atoms with their new values.
-		for (Map.Entry<String, Double> entry : input.solution.entrySet()) {
+		for (Map.Entry<Integer, Double> entry : input.solution.entrySet()) {
 			variableIds.getKey(entry.getKey()).setValue(entry.getValue().doubleValue());
 		}
 	}
@@ -89,7 +87,7 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	public void add(GroundRule rule, SimpleTerm term) {
 		for (RandomVariableAtom atom : term.getAtoms()) {
 			if (!variableIds.containsKey(atom)) {
-				variableIds.put(atom, ID_PRRFIX + variableIds.size());
+				variableIds.put(atom, variableIds.size());
 			}
 		}
 
@@ -109,14 +107,14 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	}
 
 	private static class Output {
-		public Set<String> variables;
+		public Set<Integer> variables;
 
 		public List<OutputTerm> objectiveSummands;
 
 		// All formulated such that the summation of each term is <= 0.
 		public List<OutputTerm> constraints;
 
-		public Output(Set<String> variables, List<OutputTerm> objectiveSummands, List<OutputTerm> constraints) {
+		public Output(Set<Integer> variables, List<OutputTerm> objectiveSummands, List<OutputTerm> constraints) {
 			this.variables = variables;
 			this.objectiveSummands = objectiveSummands;
 			this.constraints = constraints;
@@ -125,12 +123,12 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 
 	private class OutputTerm {
 		public double constant;
-		public String[] variables;
+		public int[] variables;
 		public double[] coefficients;
 		public boolean squared;
 		public double weight;
 
-		public OutputTerm(double constant, String[] variables, double[] coefficients,
+		public OutputTerm(double constant, int[] variables, double[] coefficients,
 				boolean squared, double weight) {
 			this.constant = constant;
 			this.variables = variables;
@@ -140,13 +138,13 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 		}
 
 		public OutputTerm(SimpleTerm term) {
-			variables = new String[term.size()];
+			variables = new int[term.size()];
 			coefficients = new double[term.size()];
 
 			List<RandomVariableAtom> rawAtoms = term.getAtoms();
 			List<Double> rawCoefficients = term.getCoefficients();
 			for (int i = 0; i < term.size(); i++) {
-				variables[i] = variableIds.get(rawAtoms.get(i));
+				variables[i] = variableIds.get(rawAtoms.get(i)).intValue();
 				coefficients[i] = rawCoefficients.get(i).doubleValue();
 			}
 
@@ -157,6 +155,6 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 	}
 
 	private static class Input {
-		public Map<String, Double> solution;
+		public Map<Integer, Double> solution;
 	}
 }
