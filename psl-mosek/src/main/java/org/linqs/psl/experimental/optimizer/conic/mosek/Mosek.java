@@ -30,13 +30,14 @@ import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 import mosek.Env;
-import mosek.Env.solveform;
 import mosek.Task;
+import mosek.solveform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,24 +51,24 @@ public class Mosek implements ConicProgramSolver {
 
 	/**
 	 * Key for double property. The IPM will iterate until the relative duality gap
-	 * is less than its value. Corresponds to the mosek.Env.dparam.intpnt_tol_rel_gap
-	 * and mosek.Env.dparam.intpnt_co_tol_rel_gap parameters.
+	 * is less than its value. Corresponds to the mosek.dparam.intpnt_tol_rel_gap
+	 * and mosek.dparam.intpnt_co_tol_rel_gap parameters.
 	 */
 	public static final String DUALITY_GAP_THRESHOLD_KEY = CONFIG_PREFIX + ".dualitygap";
 	public static final double DUALITY_GAP_THRESHOLD_DEFAULT = 1e-8;
 
 	/**
 	 * Key for double property. The IPM will iterate until the primal infeasibility
-	 * is less than its value. Corresponds to the mosek.Env.dparam.intpnt_tol_pfeas
-	 * and mosek.Env.dparam.intpnt_co_tol_pfeas parameters.
+	 * is less than its value. Corresponds to the mosek.dparam.intpnt_tol_pfeas
+	 * and mosek.dparam.intpnt_co_tol_pfeas parameters.
 	 */
 	public static final String PRIMAL_FEASIBILITY_THRESHOLD_KEY = CONFIG_PREFIX + ".primalfeasibility";
 	public static final double PRIMAL_FEASIBILITY_THRESHOLD_DEFAULT = 1e-8;
 
 	/**
 	 * Key for double property. The IPM will iterate until the dual infeasibility
-	 * is less than its value. Corresponds to the mosek.Env.dparam.intpnt_tol_dfeas
-	 * and mosek.Env.dparam.intpnt_co_tol_dfeas parameters.
+	 * is less than its value. Corresponds to the mosek.dparam.intpnt_tol_dfeas
+	 * and mosek.dparam.intpnt_co_tol_dfeas parameters.
 	 */
 	public static final String DUAL_FEASIBILITY_THRESHOLD_KEY = CONFIG_PREFIX + ".dualfeasibility";
 	public static final double DUAL_FEASIBILITY_THRESHOLD_DEFAULT = 1e-8;
@@ -77,28 +78,27 @@ public class Mosek implements ConicProgramSolver {
 	 * interior-point optimizer. If set to a positive number Mosek will use this
 	 * number of threads. If set to zero, the number of threads used will equal
 	 * the number of cores detected on the machine. Corresponds to the
-	 * mosek.Env.iparam.intpnt_num_threads parameter.
+	 * mosek.iparam.intpnt_num_threads parameter.
 	 */
 	public static final String NUM_THREADS_KEY = CONFIG_PREFIX + ".numthreads";
 	public static final int NUM_THREADS_DEFAULT = 0;
 
 	/**
-	 * Key for {@link solveform} property. Controls whether Mosek will solve
+	 * Key for solveform property. Controls whether Mosek will solve
 	 * the problem as given ("primal"), swap the primal and dual ("dual", if supported),
 	 * or be free to choose either ("free").
 	 */
 	public static final String SOLVE_FORM_KEY = CONFIG_PREFIX + ".solveform";
-	/** Default value for SOLVE_FORM_KEY property */
 	public static final solveform SOLVE_FORM_DEFAULT = solveform.free;
 
 	private ConicProgram program;
-	final private double dualityGap;
-	final private double pFeasTol;
-	final private double dFeasTol;
-	final private int numThreads;
-	final private solveform solveForm;
+	private final double dualityGap;
+	private final double pFeasTol;
+	private final double dFeasTol;
+	private final int numThreads;
+	private final solveform solveForm;
 
-	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(3);
+	private static final List<ConeType> supportedCones = new ArrayList<ConeType>(3);
 	static {
 		supportedCones.add(ConeType.NonNegativeOrthantCone);
 		supportedCones.add(ConeType.SecondOrderCone);
@@ -109,14 +109,13 @@ public class Mosek implements ConicProgramSolver {
 
 	public Mosek(ConfigBundle config) {
 		environment = new mosek.Env();
-		environment.init();
 
 		program = null;
 		dualityGap = config.getDouble(DUALITY_GAP_THRESHOLD_KEY, DUALITY_GAP_THRESHOLD_DEFAULT);
 		pFeasTol = config.getDouble(PRIMAL_FEASIBILITY_THRESHOLD_KEY, PRIMAL_FEASIBILITY_THRESHOLD_DEFAULT);
 		dFeasTol = config.getDouble(DUAL_FEASIBILITY_THRESHOLD_KEY, DUAL_FEASIBILITY_THRESHOLD_DEFAULT);
 		numThreads = config.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);
-		solveForm = (solveform) config.getEnum(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT);
+		solveForm = (solveform)config.getEnum(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT);
 	}
 
 	@Override
@@ -145,18 +144,17 @@ public class Mosek implements ConicProgramSolver {
 			// Initialize task.
 			Task task = new Task(environment, A.rows(), A.columns());
 			task.putcfix(0.0);
-			MsgClass msgobj = new MsgClass();
-			task.set_Stream(mosek.Env.streamtype.log, msgobj);
+			task.set_Stream(mosek.streamtype.log, new MsgClass());
 
-			task.putdouparam(mosek.Env.dparam.intpnt_tol_rel_gap, dualityGap);
-			task.putdouparam(mosek.Env.dparam.intpnt_co_tol_rel_gap, dualityGap);
-			task.putdouparam(mosek.Env.dparam.intpnt_tol_pfeas, pFeasTol);
-			task.putdouparam(mosek.Env.dparam.intpnt_co_tol_pfeas, pFeasTol);
-			task.putdouparam(mosek.Env.dparam.intpnt_tol_dfeas, dFeasTol);
-			task.putdouparam(mosek.Env.dparam.intpnt_co_tol_dfeas, dFeasTol);
+			task.putdouparam(mosek.dparam.intpnt_tol_rel_gap, dualityGap);
+			task.putdouparam(mosek.dparam.intpnt_co_tol_rel_gap, dualityGap);
+			task.putdouparam(mosek.dparam.intpnt_tol_pfeas, pFeasTol);
+			task.putdouparam(mosek.dparam.intpnt_co_tol_pfeas, pFeasTol);
+			task.putdouparam(mosek.dparam.intpnt_tol_dfeas, dFeasTol);
+			task.putdouparam(mosek.dparam.intpnt_co_tol_dfeas, dFeasTol);
 
-			task.putintparam(mosek.Env.iparam.num_threads, numThreads);
-			task.putintparam(mosek.Env.iparam.intpnt_solve_form, solveForm.value);
+			task.putintparam(mosek.iparam.num_threads, numThreads);
+			task.putintparam(mosek.iparam.intpnt_solve_form, solveForm.value);
 
 			// Create the variables and sets the objective coefficients.
 			task.appendvars((int)x.size());
@@ -167,7 +165,7 @@ public class Mosek implements ConicProgramSolver {
 			// Processes NonNegativeOrthantCones.
 			for (NonNegativeOrthantCone cone : program.getNonNegativeOrthantCones()) {
 				int index = program.getIndex(cone.getVariable());
-				task.putbound(Env.accmode.var, index, Env.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
+				task.putvarbound(index, mosek.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
 			}
 
 			// Processes SecondOrderCones.
@@ -178,13 +176,13 @@ public class Mosek implements ConicProgramSolver {
 					int index = program.getIndex(v);
 					if (v.equals(cone.getNthVariable())) {
 						indices[0] = index;
-						task.putbound(Env.accmode.var, index, Env.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
+						task.putvarbound(index, mosek.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
 					} else {
 						indices[i++] = index;
-						task.putbound(Env.accmode.var, index, Env.boundkey.fr, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+						task.putvarbound(index, mosek.boundkey.fr, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 					}
 				}
-				task.appendcone(Env.conetype.quad, 0.0, indices);
+				task.appendcone(mosek.conetype.quad, 0.0, indices);
 			}
 
 			// Process RotatedSecondOrderCones.
@@ -195,16 +193,16 @@ public class Mosek implements ConicProgramSolver {
 					int index = program.getIndex(v);
 					if (v.equals(cone.getNthVariable())) {
 						indices[0] = index;
-						task.putbound(Env.accmode.var, index, Env.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
+						task.putvarbound(index, mosek.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
 					} else if (v.equals(cone.getNMinus1stVariable())) {
 						indices[1] = index;
-						task.putbound(Env.accmode.var, index, Env.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
+						task.putvarbound(index, mosek.boundkey.lo, 0.0, Double.POSITIVE_INFINITY);
 					} else {
 						indices[i++] = index;
-						task.putbound(Env.accmode.var, index, Env.boundkey.fr, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+						task.putvarbound(index, mosek.boundkey.fr, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 					}
 				}
-				task.appendcone(Env.conetype.rquad, 0.0, indices);
+				task.appendcone(mosek.conetype.rquad, 0.0, indices);
 			}
 
 			// Set the linear constraints.
@@ -226,27 +224,27 @@ public class Mosek implements ConicProgramSolver {
 					valueList[listIndex++] = e.getValue();
 				}
 				task.putarow(constraintIndex, indexList, valueList);
-				task.putbound(mosek.Env.accmode.con, constraintIndex, Env.boundkey.fx,b.getQuick(constraintIndex), b.getQuick(constraintIndex));
+				task.putconbound(constraintIndex, mosek.boundkey.fx,b.getQuick(constraintIndex), b.getQuick(constraintIndex));
 			}
 
 			// Solves the program.
-			task.putobjsense(mosek.Env.objsense.minimize);
+			task.putobjsense(mosek.objsense.minimize);
 			log.debug("Starting optimization with {} variables and {} constraints.", A.columns(), A.rows());
 
 			task.optimize();
 
 			log.debug("Completed optimization");
-			task.solutionsummary(mosek.Env.streamtype.msg);
+			task.solutionsummary(mosek.streamtype.msg);
 
-			mosek.Env.solsta solsta[] = new mosek.Env.solsta[1];
-			task.getsolsta(mosek.Env.soltype.itr, solsta);
+			mosek.solsta solsta[] = new mosek.solsta[1];
+			task.getsolsta(mosek.soltype.itr, solsta);
 
 			double[] solution = new double[A.columns()];
 			task.getsolutionslice(
-					mosek.Env.soltype.itr, //Interior solution.
-					mosek.Env.solitem.xx, // Which part of solution.
-					0, // Index of first variable.
-					A.columns(), // Index of last variable+1
+					mosek.soltype.itr,  // Interior solution.
+					mosek.solitem.xx,  // Which part of solution.
+					0,  // Index of first variable.
+					A.columns(),  // Index of last variable+1
 					solution);
 
 			switch(solsta[0]) {
@@ -256,7 +254,7 @@ public class Mosek implements ConicProgramSolver {
 				// Store solution in conic program.
 				x.assign(solution);
 				program.checkInMatrices();
-				if (mosek.Env.solsta.unknown.equals(solsta[0])) {
+				if (mosek.solsta.unknown.equals(solsta[0])) {
 					log.warn("Mosek solution status unknown.");
 				}
 				break;
