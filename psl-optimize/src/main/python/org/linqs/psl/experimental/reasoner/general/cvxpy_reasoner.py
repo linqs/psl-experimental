@@ -67,11 +67,12 @@ def buildObjective(problem, variableMap):
 
     for term in problem['objectiveSummands']:
         localObjective = buildLocalObjective(term, variableMap)
+        localObjective = cvxpy.pos(localObjective)
 
         if (term['squared']):
-            cvxpy.square(localObjective)
+            localObjective = cvxpy.square(localObjective)
 
-        objective += (term['weight'] * cvxpy.pos(localObjective))
+        objective += (term['weight'] * localObjective)
 
     return objective
 
