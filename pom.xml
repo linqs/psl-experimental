@@ -44,7 +44,6 @@
 	</properties>
 
 	<modules>
-		<module>psl-experiment</module>
 		<module>psl-datasplitter</module>
 		<module>psl-optimize</module>
 		<module>psl-sampler</module>
