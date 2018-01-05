@@ -1,1 +1,4 @@
 language: java
+
+install:
+   - ./.ci/build_core.sh psl psl-utils
