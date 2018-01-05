@@ -38,14 +38,14 @@ public class CVXPYReasoner extends ExecutableReasoner {
 
 	public CVXPYReasoner(ConfigBundle config) {
 		super(config);
-		
-        this.executableInputPath = MODEL_PATH;
-        this.executableOutputPath = RESULTS_PATH;
-        this.args = new String[]{MODEL_PATH, RESULTS_PATH};
+
+		this.executableInputPath = MODEL_PATH;
+		this.executableOutputPath = RESULTS_PATH;
+		this.args = new String[]{MODEL_PATH, RESULTS_PATH};
 	}
 
-	public CVXPYReasoner(String executablePath) {
-		super(executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
+	public CVXPYReasoner(ConfigBundle config, String executablePath) {
+		super(config, executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
 	}
 
 	@Override

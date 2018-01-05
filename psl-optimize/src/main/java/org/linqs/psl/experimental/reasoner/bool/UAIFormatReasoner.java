@@ -83,7 +83,7 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 	private final int seed;
 
 	public UAIFormatReasoner(ConfigBundle config, String executablePath) {
-		super(executablePath, BASE_FILENAME, null, null);
+		super(config, executablePath, BASE_FILENAME, null, null);
 
 		task = (Task)config.getEnum(TASK_KEY, TASK_DEFAULT);
 		seed = config.getInt(SEED_KEY, SEED_DEFAULT);

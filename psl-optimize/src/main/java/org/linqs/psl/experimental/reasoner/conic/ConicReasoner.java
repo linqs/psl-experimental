@@ -41,8 +41,9 @@ import java.util.Map;
  * Reasoner that uses a {@link ConicProgramSolver} to minimize the total weighted
  * incompatibility.
  */
-public class ConicReasoner implements Reasoner {
+public class ConicReasoner extends Reasoner {
 	public ConicReasoner(ConfigBundle config) {
+		super(config);
 	}
 
 	@Override
