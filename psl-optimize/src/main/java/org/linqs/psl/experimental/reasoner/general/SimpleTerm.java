@@ -98,8 +98,16 @@ public class SimpleTerm implements Term {
 		return weight;
 	}
 
+	public RandomVariableAtom getAtom(int index) {
+		return atoms.get(index);
+	}
+
 	public List<RandomVariableAtom> getAtoms() {
 		return Collections.unmodifiableList(atoms);
+	}
+
+	public double getCoefficient(int index) {
+		return coefficients.get(index).doubleValue();
 	}
 
 	public List<Double> getCoefficients() {

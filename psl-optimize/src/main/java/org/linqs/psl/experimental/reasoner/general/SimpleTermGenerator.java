@@ -35,9 +35,10 @@ import org.linqs.psl.reasoner.term.TermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
 
 /**
- * A TermGenerator for terms meant to be serialized via JSON.
+ * A TermGenerator for simplified terms.
+ * These terms are usually later serialized and sent off to some external optimizer.
  */
-public class JSONSerialTermGenerator implements TermGenerator<SimpleTerm> {
+public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 	@Override
 	public void generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
 		for (GroundRule groundRule : ruleStore.getGroundRules()) {
