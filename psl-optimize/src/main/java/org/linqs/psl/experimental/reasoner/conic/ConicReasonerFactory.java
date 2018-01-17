@@ -23,15 +23,13 @@ import org.linqs.psl.reasoner.ReasonerFactory;
 
 /**
  * Factory for a {@link ConicReasoner}.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class ConicReasonerFactory implements ReasonerFactory {
-
 	@Override
 	public Reasoner getReasoner(ConfigBundle config)
 			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
 		return new ConicReasoner(config);
 	}
-
 }

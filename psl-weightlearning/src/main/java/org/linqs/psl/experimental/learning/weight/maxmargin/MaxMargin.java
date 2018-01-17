@@ -136,7 +136,7 @@ abstract public class MaxMargin extends WeightLearningApplication {
 	protected MinNormProgram normProgram;
 
 	public MaxMargin(Model model, Database rvDB, Database observedDB, ConfigBundle config) {
-		super(model, rvDB, observedDB, config);
+		super(model.getRules(), rvDB, observedDB, false, config);
 		tolerance = config.getDouble(CUTTING_PLANE_TOLERANCE_KEY, CUTTING_PLANE_TOLERANCE_DEFAULT);
 		maxIter = config.getInt(MAX_ITER_KEY, MAX_ITER_DEFAULT);
 		nonnegativeWeights = config.getBoolean(NONNEGATIVE_WEIGHTS_KEY, NONNEGATIVE_WEIGHTS_DEFAULT);

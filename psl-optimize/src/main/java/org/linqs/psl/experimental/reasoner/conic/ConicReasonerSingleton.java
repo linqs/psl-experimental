@@ -20,30 +20,23 @@ package org.linqs.psl.experimental.reasoner.conic;
 import java.util.Map;
 
 import org.linqs.psl.experimental.optimizer.conic.program.Variable;
-import org.linqs.psl.reasoner.function.FunctionSingleton;
+import org.linqs.psl.reasoner.function.FunctionTerm;
 import org.linqs.psl.reasoner.function.FunctionVariable;
 
-class ConicReasonerSingleton implements FunctionSingleton {
+public class ConicReasonerSingleton implements FunctionTerm {
+	private Variable var;
 
-	Variable var;
-	
 	protected ConicReasonerSingleton(Variable v) {
 		var = v;
 	}
-	
+
 	protected Variable getVariable() {
 		return var;
 	}
-	
+
 	@Override
 	public double getValue() {
 		return var.getValue();
-	}
-
-	@Override
-	public double getValue(Map<? extends FunctionVariable, Double> values,
-			boolean assumeDefaultValue) {
-		return getValue();
 	}
 
 	@Override

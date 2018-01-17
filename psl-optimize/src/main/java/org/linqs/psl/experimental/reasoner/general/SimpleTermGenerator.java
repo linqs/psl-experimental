@@ -40,13 +40,18 @@ import org.linqs.psl.reasoner.term.TermStore;
  */
 public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 	@Override
-	public void generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+	public int generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+		int count = 0;
+
 		for (GroundRule groundRule : ruleStore.getGroundRules()) {
 			SimpleTerm term = createTerm(groundRule);
 			if (term.size() > 0) {
 				termStore.add(groundRule, term);
+				count++;
 			}
 		}
+
+		return count;
 	}
 
 	@Override
