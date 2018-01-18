@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2015 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ import java.util.Set;
  * A TermStore that is meant to serialize/deserialize the optimization
  * problem to/from JSON.
  */
-public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
+public class JSONSerialTermStore
+		extends MemoryTermStore<SimpleTerm> implements SerialTermStore<SimpleTerm> {
 	private BidiMap<RandomVariableAtom, Integer> variableIds;
 
 	public JSONSerialTermStore() {
@@ -47,10 +48,7 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 		variableIds = new DualHashBidiMap<RandomVariableAtom, Integer>();
 	}
 
-	/**
-	 * Write out the optimiztion problem
-	 * (variables, objective, and constraints) to a JSON file.
-	 */
+	@Override
 	public void serialize(BufferedWriter writer) {
 		List<OutputTerm> objectiveSummands = new ArrayList<OutputTerm>();
 		List<OutputTerm> constraints = new ArrayList<OutputTerm>();
@@ -69,10 +67,7 @@ public class JSONSerialTermStore extends MemoryTermStore<SimpleTerm> {
 		gson.toJson(output, writer);
 	}
 
-	/**
-	 * Read a JSON file describing the solution and
-	 * update all the variables (ground atoms).
-	 */
+	@Override
 	public void deserialize(BufferedReader reader) {
 		Gson gson = new Gson();
 		Input input = gson.fromJson(reader, Input.class);

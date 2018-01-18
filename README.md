@@ -8,7 +8,7 @@ This repository contains experimental extensions of PSL.
 
 The following modules are provided by psl-experimental:
  - psl-datasplitter
- - psl-experiment
+ - psl-ltn
  - psl-mosek
  - psl-optimize
  - psl-sampler
@@ -16,8 +16,10 @@ The following modules are provided by psl-experimental:
 
 Additional Resources
 ====================
- - [PSL homepage](http://psl.cs.umd.edu)
- - [PSL source repository](https://github.com/linqs/psl)
- - [PSL wiki](https://github.com/eriq-augustine/psl/wiki)
- - [Getting Started guide](https://github.com/eriq-augustine/psl/wiki/Core-Topics)
- - [User group](https://groups.google.com/forum/#!forum/psl-users)
+
+- [PSL homepage](http://psl.cs.umd.edu)
+- [API Refernce](https://linqs-data.soe.ucsc.edu/psl-docs/)
+- [PSL source repository](https://github.com/linqs/psl)
+- [PSL wiki](https://github.com/eriq-augustine/psl/wiki)
+- [Getting Started guide](https://github.com/eriq-augustine/psl/wiki/Core-Topics)
+- [User group](https://groups.google.com/forum/#!forum/psl-users)

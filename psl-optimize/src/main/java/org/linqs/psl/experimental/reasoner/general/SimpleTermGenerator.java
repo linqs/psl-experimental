@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2015 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,17 +35,23 @@ import org.linqs.psl.reasoner.term.TermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
 
 /**
- * A TermGenerator for terms meant to be serialized via JSON.
+ * A TermGenerator for simplified terms.
+ * These terms are usually later serialized and sent off to some external optimizer.
  */
-public class JSONSerialTermGenerator implements TermGenerator<SimpleTerm> {
+public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 	@Override
-	public void generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+	public int generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+		int count = 0;
+
 		for (GroundRule groundRule : ruleStore.getGroundRules()) {
 			SimpleTerm term = createTerm(groundRule);
 			if (term.size() > 0) {
 				termStore.add(groundRule, term);
+				count++;
 			}
 		}
+
+		return count;
 	}
 
 	@Override

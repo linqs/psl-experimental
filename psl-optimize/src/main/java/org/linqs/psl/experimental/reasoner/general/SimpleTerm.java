@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2015 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,8 +98,16 @@ public class SimpleTerm implements Term {
 		return weight;
 	}
 
+	public RandomVariableAtom getAtom(int index) {
+		return atoms.get(index);
+	}
+
 	public List<RandomVariableAtom> getAtoms() {
 		return Collections.unmodifiableList(atoms);
+	}
+
+	public double getCoefficient(int index) {
+		return coefficients.get(index).doubleValue();
 	}
 
 	public List<Double> getCoefficients() {

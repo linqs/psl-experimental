@@ -25,16 +25,20 @@ import org.linqs.psl.reasoner.term.TermGenerator;
 import org.linqs.psl.reasoner.term.TermStore;
 
 public class ConicTermGenerator implements TermGenerator<ConicProgramProxy> {
-	public void generateTerms(GroundRuleStore ruleStore, TermStore<ConicProgramProxy> termStore) {
+	public int generateTerms(GroundRuleStore ruleStore, TermStore<ConicProgramProxy> termStore) {
 		// We specifically need a ConicTermStore.
 		if (!(termStore instanceof ConicTermStore)) {
 			throw new IllegalArgumentException("Require a ConicTermStore.");
 		}
+
 		ConicTermStore conicTermStore = (ConicTermStore)termStore;
 
+		int count = 0;
 		for (GroundRule rule : ruleStore.getGroundRules()) {
 			generateTerm(rule, conicTermStore);
+			count++;
 		}
+		return count;
 	}
 
 	private void generateTerm(GroundRule rule, ConicTermStore termStore) {

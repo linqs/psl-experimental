@@ -23,7 +23,8 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.reasoner.ExecutableReasoner;
-import org.linqs.psl.reasoner.term.ConstraintBlockerTermStore;
+import org.linqs.psl.reasoner.term.blocker.ConstraintBlockerTerm;
+import org.linqs.psl.reasoner.term.blocker.ConstraintBlockerTermStore;
 import org.linqs.psl.reasoner.term.TermStore;
 
 import java.io.BufferedReader;
@@ -117,17 +118,15 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 		}
 		ConstraintBlockerTermStore blocker = (ConstraintBlockerTermStore)termStore;
 
-		RandomVariableAtom[][] rvBlocks = blocker.getRVBlocks();
-		boolean[] exactlyOne = blocker.getExactlyOne();
-		Map<RandomVariableAtom, Integer> rvMap = blocker.getRVMap();
-
 		modelWriter.write("MARKOV\n");
 
 		// Writes out number of variables and each cardinality.
-		modelWriter.write(blocker.getRVBlocks().length + "\n");
-		for (int i = 0; i < rvBlocks.length; i++) {
-			modelWriter.write(Integer.toString(exactlyOne[i] ? rvBlocks[i].length : rvBlocks[i].length + 1));
-			if (i < rvBlocks.length - 1) {
+		modelWriter.write(blocker.size() + "\n");
+		for (int i = 0; i < blocker.size(); i++) {
+			ConstraintBlockerTerm block = blocker.get(i);
+
+			modelWriter.write(Integer.toString(block.getExactlyOne() ? block.size() : (block.size() + 1)));
+			if (i < blocker.size() - 1) {
 				modelWriter.write(" ");
 			}
 		}
@@ -145,7 +144,7 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 		for (WeightedGroundRule gck : gcks) {
 			for (GroundAtom atom : gck.getAtoms()) {
 				if (atom instanceof RandomVariableAtom) {
-					vars.add(rvMap.get(atom));
+					vars.add(blocker.getBlockIndex((RandomVariableAtom)atom));
 				}
 			}
 
@@ -165,7 +164,7 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 			modelWriter.write("\n");
 			for (GroundAtom atom : gck.getAtoms()) {
 				if (atom instanceof RandomVariableAtom) {
-					vars.add(rvMap.get(atom));
+					vars.add(blocker.getBlockIndex((RandomVariableAtom)atom));
 				}
 			}
 			Collections.sort(vars);
@@ -173,7 +172,8 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 			// Computes and writes number of table entries.
 			int entries = 1;
 			for (int i = 0; i < vars.size(); i++) {
-				entries *= exactlyOne[vars.get(i)] ? rvBlocks[vars.get(i)].length : rvBlocks[vars.get(i)].length + 1;
+				ConstraintBlockerTerm block = blocker.get(vars.get(i));
+				entries *= block.getExactlyOne() ? block.size() : (block.size() + 1);
 			}
 			modelWriter.write(Integer.toString(entries) + "\n");
 
@@ -182,15 +182,17 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 			for (int i = 0; i < entries; i++) {
 				// Assigns variables to current entry.
 				for (int j = 0; j < vars.size(); j++) {
+					ConstraintBlockerTerm block = blocker.get(vars.get(j));
+
 					// Just zeroes everything out first.
-					for (int k = 0; k < rvBlocks[vars.get(j)].length; k++) {
-						rvBlocks[vars.get(j)][k].setValue(0.0);
+					for (int k = 0; k < block.size(); k++) {
+						block.getAtoms()[k].setValue(0.0);
 					}
 
 					// If it is the first state and the sum does not have to be one,
 					// leave as all zeros. Otherwise, flips the correct bit.
-					if (exactlyOne[vars.get(j)] || currentEntry[j] != 0) {
-						rvBlocks[vars.get(j)][(exactlyOne[vars.get(j)]) ? currentEntry[j] : currentEntry[j] - 1].setValue(1.0);
+					if (block.getExactlyOne() || currentEntry[j] != 0) {
+						block.getAtoms()[block.getExactlyOne() ? currentEntry[j] : currentEntry[j] - 1].setValue(1.0);
 					}
 				}
 
@@ -201,8 +203,10 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 
 				// Updates current entry.
 				for (int j = 0; j < currentEntry.length; j++) {
+					ConstraintBlockerTerm block = blocker.get(vars.get(j));
+
 					currentEntry[j]++;
-					if (currentEntry[j] == (exactlyOne[vars.get(j)] ? rvBlocks[vars.get(j)].length : rvBlocks[vars.get(j)].length + 1)) {
+					if (currentEntry[j] == (block.getExactlyOne() ? block.size() : block.size() + 1)) {
 						currentEntry[j] = 0;
 					} else {
 						break;
@@ -221,9 +225,6 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 			throw new IllegalArgumentException("ConstraintBlockerTermStore required.");
 		}
 		ConstraintBlockerTermStore blocker = (ConstraintBlockerTermStore)termStore;
-
-		RandomVariableAtom[][] rvBlocks = blocker.getRVBlocks();
-		boolean[] exactlyOne = blocker.getExactlyOne();
 
 		String line = resultsReader.readLine();
 		if (!line.equals(task.toString())) {
@@ -248,17 +249,18 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 		// Parses the solution string.
 		String[] assignments = solution.split(" ");
 		for (int i = 0; i < assignments.length - 1; i++) {
-			int assignment = Integer.parseInt(assignments[i+1]);
+			ConstraintBlockerTerm block = blocker.get(i);
+			int assignment = Integer.parseInt(assignments[i + 1]);
 
 			// First zeros out everything.
-			for (int k = 0; k < rvBlocks[i].length; k++) {
-				rvBlocks[i][k].setValue(0.0);
+			for (int k = 0; k < block.size(); k++) {
+				block.getAtoms()[k].setValue(0.0);
 			}
 
 			// If it is the first state and the sum does not have to be one,
 			// leave as all zeros. Otherwise, flips the correct bit.
-			if (exactlyOne[i] || assignment != 0) {
-				rvBlocks[i][(exactlyOne[i]) ? assignment : assignment - 1].setValue(1.0);
+			if (block.getExactlyOne() || assignment != 0) {
+				block.getAtoms()[block.getExactlyOne() ? assignment : assignment - 1].setValue(1.0);
 			}
 		}
 	}

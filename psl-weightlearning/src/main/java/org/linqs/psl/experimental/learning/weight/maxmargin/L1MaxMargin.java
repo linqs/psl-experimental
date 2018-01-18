@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
-import org.linqs.psl.application.learning.weight.LossAugmentingGroundRule;
 import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.config.ConfigManager;
 import org.linqs.psl.database.Database;

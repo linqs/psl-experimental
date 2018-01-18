@@ -15,37 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.linqs.psl.experimental.reasoner.conic;
+package org.linqs.psl.experimental.reasoner.general;
 
-import java.util.Map;
+import org.linqs.psl.reasoner.term.Term;
+import org.linqs.psl.reasoner.term.TermStore;
 
-import org.linqs.psl.experimental.optimizer.conic.program.Variable;
-import org.linqs.psl.reasoner.function.FunctionTerm;
-import org.linqs.psl.reasoner.function.FunctionVariable;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
-public class ConicReasonerSingleton implements FunctionTerm {
-	private Variable var;
+/**
+ * A TermStore that can write out its terms to a file.
+ */
+public interface SerialTermStore<E extends Term> extends TermStore<E> {
+	/**
+	 * Write out the optimiztion problem
+	 * (variables, objective, and constraints) to a file.
+	 */
+	public void serialize(BufferedWriter writer) throws IOException;
 
-	protected ConicReasonerSingleton(Variable v) {
-		var = v;
-	}
-
-	protected Variable getVariable() {
-		return var;
-	}
-
-	@Override
-	public double getValue() {
-		return var.getValue();
-	}
-
-	@Override
-	public boolean isConstant() {
-		return false;
-	}
-
-	@Override
-	public boolean isLinear() {
-		return true;
-	}
+	/**
+	 * Read a file describing the solution and
+	 * update all the variables (ground atoms).
+	 */
+	public void deserialize(BufferedReader reader) throws IOException;
 }
