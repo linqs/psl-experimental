@@ -54,7 +54,7 @@ public class ConicTermStore implements TermStore<ConicProgramProxy> {
 	private ConicProgram program;
 	private ConicProgramSolver solver;
 
-	private List<ConicProgramProxy> terms;
+	private ArrayList<ConicProgramProxy> terms;
 	private Map<GroundRule, ConicProgramProxy> groundTermMapping;
 	private Map<AtomFunctionVariable, VariableConicProgramProxy> vars;
 
@@ -115,18 +115,52 @@ public class ConicTermStore implements TermStore<ConicProgramProxy> {
 	}
 
 	@Override
+	public void ensureCapacity(int capacity) {
+		assert(capacity >= 0);
+
+		if (capacity == 0) {
+			return;
+		}
+
+		terms.ensureCapacity(capacity);
+
+		// If the map is empty, then just reallocate it
+		// (since we can't add capacity).
+		if (groundTermMapping.size() == 0) {
+			// The default load factor for Java HashMaps is 0.75.
+			groundTermMapping = new HashMap<GroundRule, ConicProgramProxy>((int)(capacity / 0.75));
+		}
+
+		if (vars.size() == 0) {
+			// Assume 2 atoms per term.
+			vars = new HashMap<AtomFunctionVariable, VariableConicProgramProxy>((int)(capacity * 2 / 0.75));
+		}
+	}
+
+	@Override
 	public void close() {
 		clear();
 
+		terms = null;
+		groundTermMapping = null;
+		vars = null;
 		program = null;
 		solver = null;
 	}
 
 	@Override
 	public void clear() {
-		terms.clear();
-		groundTermMapping.clear();
-		vars.clear();
+		if (terms != null) {
+			terms.clear();
+		}
+
+		if (groundTermMapping != null) {
+			groundTermMapping.clear();
+		}
+
+		if (vars != null) {
+			vars.clear();
+		}
 	}
 
 	@Override
