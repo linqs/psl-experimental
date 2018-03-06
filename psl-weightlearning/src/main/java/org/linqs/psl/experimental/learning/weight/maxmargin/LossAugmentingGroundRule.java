@@ -72,6 +72,15 @@ public class LossAugmentingGroundRule implements WeightedGroundRule {
 	}
 
 	@Override
+	public double getIncompatibility(GroundAtom replacementAtom, double replacementValue) {
+		if (atom == replacementAtom) {
+			return Math.abs(replacementValue - this.groundTruth);
+		} else {
+			return getIncompatibility();
+		}
+	}
+
+	@Override
 	public double getWeight() {
 		return weight;
 	}
