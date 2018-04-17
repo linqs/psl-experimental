@@ -18,6 +18,7 @@
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
 import org.linqs.psl.model.atom.GroundAtom;
+import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.model.rule.WeightedRule;
 import org.linqs.psl.reasoner.function.ConstantNumber;
@@ -26,6 +27,7 @@ import org.linqs.psl.reasoner.function.FunctionSummand;
 import org.linqs.psl.reasoner.function.FunctionTerm;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -107,5 +109,10 @@ public class LossAugmentingGroundRule implements WeightedGroundRule {
 
 	public GroundAtom getAtom() {
 		return atom;
+	}
+
+	@Override
+	public List<GroundRule> negate() {
+		throw new UnsupportedOperationException();
 	}
 }

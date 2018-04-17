@@ -19,7 +19,6 @@ package org.linqs.psl.experimental.optimizer.conic.ipm.solver;
 
 import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.config.ConfigManager;
-import org.linqs.psl.config.Factory;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.IdentityPreconditionerFactory;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.PreconditionerFactory;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -90,18 +89,11 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final double CG_DIV_TOL_DEFAULT = 10e5;
 	
 	/**
-	 * Key for {@link Factory} or String property.
-	 * 
 	 * Should be set to a {@link PreconditionerFactory} or the fully qualified
 	 * name of one. Will be used to instantiate a {@link DoublePreconditioner}.
 	 */
 	public static final String PRECONDITIONER_KEY = CONFIG_PREFIX + ".preconditioner";
-	/**
-	 * Default value for PRECONDITIONER_KEY.
-	 * 
-	 * Value is instance of {@link DoubleIdentity}. 
-	 */
-	public static final PreconditionerFactory PRECONDITIONER_DEFAULT = new IdentityPreconditionerFactory();
+	public static final String PRECONDITIONER_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.IdentityPreconditionerFactory";
 	
 	private final int maxIter;
 	private final double relTol;
@@ -122,7 +114,7 @@ public class ConjugateGradient implements NormalSystemSolver {
 		absTol  = config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
 		divTol  = config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
 		
-		preconditionerFactory = (PreconditionerFactory) config.getFactory(PRECONDITIONER_KEY, PRECONDITIONER_DEFAULT);
+		preconditionerFactory = (PreconditionerFactory)config.getNewObject(PRECONDITIONER_KEY, PRECONDITIONER_DEFAULT);
 		
 		monitor = new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol);
 		monitor.setIterationReporter(new DoubleIterationReporter() {

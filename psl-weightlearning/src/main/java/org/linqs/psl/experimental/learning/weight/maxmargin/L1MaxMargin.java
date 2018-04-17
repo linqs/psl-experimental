@@ -147,6 +147,7 @@ public class L1MaxMargin extends MaxMargin {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void runSeparationOracle() {
 		int optimizationCount = 0;
 		boolean rerunOptimization = true;

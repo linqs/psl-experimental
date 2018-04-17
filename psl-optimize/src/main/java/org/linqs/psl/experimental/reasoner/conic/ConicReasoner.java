@@ -18,10 +18,7 @@
 package org.linqs.psl.experimental.reasoner.conic;
 
 import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
-import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolverFactory;
-import org.linqs.psl.experimental.optimizer.conic.ipm.HomogeneousIPMFactory;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.Rule;

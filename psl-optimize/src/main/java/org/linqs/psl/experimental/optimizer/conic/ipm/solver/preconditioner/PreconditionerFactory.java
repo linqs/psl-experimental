@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner;
 
-import org.linqs.psl.config.Factory;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 
 import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
@@ -27,6 +26,6 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
  * 
  * @author Stephen Bach <bach@cs.umd.edu>
  */
-public interface PreconditionerFactory extends Factory {
+public interface PreconditionerFactory {
 	public DoublePreconditioner getPreconditioner(ConicProgram program);
 }

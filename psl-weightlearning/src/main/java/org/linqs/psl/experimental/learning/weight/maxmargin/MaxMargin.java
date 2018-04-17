@@ -203,6 +203,7 @@ abstract public class MaxMargin extends WeightLearningApplication {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected void doLearn() {
 		double[] weights;
 		double[] truthIncompatibility;

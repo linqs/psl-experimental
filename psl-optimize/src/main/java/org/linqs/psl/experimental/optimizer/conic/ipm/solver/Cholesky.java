@@ -25,11 +25,10 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 
 /**
  * Solves normal systems using a Cholesky factorization.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class Cholesky implements NormalSystemSolver {
-	
 	private SparseDoubleCholeskyDecomposition decomposition;
 
 	@Override
@@ -46,5 +45,4 @@ public class Cholesky implements NormalSystemSolver {
 	public void solve(DoubleMatrix1D b) {
 		decomposition.solve(b);
 	}
-
 }

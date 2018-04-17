@@ -43,8 +43,6 @@ public class ConicTermStore implements TermStore<ConicProgramProxy> {
 	public static final String CONFIG_PREFIX = "conictermstore";
 
 	/**
-	 * Key for {@link org.linqs.psl.config.Factory} or String property.
-	 *
 	 * Should be set to a {@link org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver}.
 	 * The ConicReasoner will use this to solver which will then be used for inference.
 	 */

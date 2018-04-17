@@ -23,11 +23,8 @@ import java.util.Set;
 
 import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.config.ConfigManager;
-import org.linqs.psl.config.Factory;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
-import org.linqs.psl.experimental.optimizer.conic.ipm.solver.CholeskyFactory;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.NormalSystemSolver;
-import org.linqs.psl.experimental.optimizer.conic.ipm.solver.NormalSystemSolverFactory;
 import org.linqs.psl.experimental.optimizer.conic.program.Cone;
 import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -141,18 +138,11 @@ public class HomogeneousIPM implements ConicProgramSolver {
 	public static final double DELTA_DEFAULT = 0.5;
 	
 	/**
-	 * Key for {@link Factory} or String property.
-	 * 
-	 * Should be set to a {@link NormalSystemSolverFactory} or the fully qualified
+	 * Should be set to a {@link NormalSystemSolver} or the fully qualified
 	 * name of one. Will be used to instantiate a {@link NormalSystemSolver}.
 	 */
 	public static final String NORMAL_SYS_SOLVER_KEY = CONFIG_PREFIX + ".normalsolver";
-	/**
-	 * Default value for NORMAL_SYS_SOLVER_KEY.
-	 * 
-	 * Value is instance of {@link CholeskyFactory}. 
-	 */
-	public static final NormalSystemSolverFactory NORMAL_SYS_SOLVER_DEFAULT = new CholeskyFactory();
+	public static final String NORMAL_SYS_SOLVER_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.solver.Cholesky";
 	
 	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(2);
 	static {
@@ -246,8 +236,7 @@ public class HomogeneousIPM implements ConicProgramSolver {
 		tauThreshold = config.getDouble(TAU_THRESHOLD_KEY, TAU_THRESHOLD_DEFAULT);
 		muThreshold = config.getDouble(MU_THRESHOLD_KEY, MU_THRESHOLD_DEFAULT);
 		beta = config.getDouble(BETA_KEY, BETA_DEFAULT);
-		NormalSystemSolverFactory solverFactory = (NormalSystemSolverFactory) config.getFactory(NORMAL_SYS_SOLVER_KEY, NORMAL_SYS_SOLVER_DEFAULT);
-		solver = solverFactory.getNormalSystemSolver(config);
+		solver = (NormalSystemSolver)config.getNewObject(NORMAL_SYS_SOLVER_KEY, NORMAL_SYS_SOLVER_DEFAULT);
 		
 		if (beta <= 0 || beta >= 1)
 			throw new IllegalArgumentException("Property " + BETA_KEY + " must be in (0,1).");
