@@ -17,12 +17,6 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.partition;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.experimental.optimizer.conic.program.Cone;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
@@ -36,80 +30,81 @@ import org.linqs.psl.utils.graph.memory.MemoryGraph;
 import org.linqs.psl.utils.graph.partition.hierarchical.HierarchicalPartitioning;
 import org.linqs.psl.utils.graph.partition.hierarchical.HyperPartitioning;
 import org.linqs.psl.utils.graph.weight.RelationshipWeighter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 
 public class ObjectiveCoefficientPartitioner {
 
 	private static final Logger log = LoggerFactory.getLogger(ObjectiveCoefficientPartitioner.class);
-	
+
 	protected static final int base = 2;
 	protected ConicProgram program;
 	protected ConicProgramPartition partition;
-	
+
 	protected BiMap<Cone, Node> coneMap;
 	protected BiMap<LinearConstraint, Node> lcMap;
-	
-	
+
+
 	private static final String LC_REL = "lcRel";
 
-	public ObjectiveCoefficientPartitioner(ConfigBundle config) {
-		
-	}
-	
 	public void setConicProgram(ConicProgram program) {
 		this.program = program;
 		doPartition();
 	}
-	
+
 	protected void doPartition() {
 		Graph graph;
 		Node node;
-		
+
 		int numElements = (int) Math.ceil((double) program.getNumLinearConstraints() / 5000);
-		
+
 		List<List<Node>> graphPartition = null;
 
 		List<Set<Cone>> blocks;
-		
+
 		/* Partitions conic program graph into elements */
 		HierarchicalPartitioning partitioner = new HyperPartitioning();
 		partitioner.setNoPartitioningTrials(10);
 		partitioner.setSize(numElements);
-		
+
 		boolean redoPartition = false;
-		
+
 		do {
 			graph = new MemoryGraph();
 			graph.createRelationshipType(LC_REL);
-			
+
 			coneMap = HashBiMap.create();
 			lcMap = HashBiMap.create();
-			
+
 			for (Cone cone : program.getCones()) {
 				node = graph.createNode();
 				coneMap.put(cone, node);
 			}
-			
+
 			Set<Cone> coneSet = new HashSet<Cone>();
 			for (LinearConstraint con : program.getConstraints()) {
 				node = graph.createNode();
 				lcMap.put(con, node);
-				
+
 				for (Variable var : con.getVariables().keySet()) {
 					coneSet.add(var.getCone());
 				}
-				
+
 				for (Cone cone : coneSet) {
 					node.createRelationship(LC_REL, coneMap.get(cone));
 				}
-				
+
 				coneSet.clear();
 			}
-			
+
 			graphPartition = partitioner.partition(graph, graph.getNodeSnapshot(), new RelationshipWeighter() {
 				@Override
 				public double getWeight(Relationship r) {
@@ -122,16 +117,16 @@ public class ObjectiveCoefficientPartitioner {
 						return Double.POSITIVE_INFINITY;
 				}
 			});
-				
+
 			log.trace("Partition finished. Checking for balance.");
-			
+
 			/* Checks if blocks are sufficiently balanced */
 			boolean balanced = true;
 			if (numElements > 1) {
 				int totalSize = 0;
 				for (List<Node> block : graphPartition)
 					totalSize += block.size();
-				
+
 				for (List<Node> block : graphPartition){
 					if (block.size() > 2*(totalSize - block.size())) {
 	//						log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
@@ -142,12 +137,12 @@ public class ObjectiveCoefficientPartitioner {
 						break;
 					}
 				}
-				
+
 				if (!balanced) {
 					redoPartition = true;
 				}
 			}
-	
+
 			/* Partition accepted */
 			if (!redoPartition) {
 				/* Collects cones in blocks */
@@ -162,14 +157,14 @@ public class ObjectiveCoefficientPartitioner {
 					}
 					blocks.add(block);
 				}
-				
+
 				/* Initializes the partition */
 				partition = new ConicProgramPartition(program, blocks);
 				return;
 			}
 		} while (true);
 	}
-	
+
 	public ConicProgramPartition getPartition() {
 		return partition;
 	}
@@ -186,5 +181,4 @@ public class ObjectiveCoefficientPartitioner {
 		else
 			throw new IllegalStateException();
 	}
-
 }

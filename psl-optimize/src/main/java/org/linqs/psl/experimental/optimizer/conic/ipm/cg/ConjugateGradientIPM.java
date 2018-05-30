@@ -17,8 +17,7 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.cg;
 
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ipm.IPM;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 
@@ -32,20 +31,18 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 
 /**
  * Primal-dual short-step interior point method.
- * 
+ *
  * This IPM solves the normal system using an iterative conjugate gradient solver.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class ConjugateGradientIPM extends IPM {
-	
+
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "cgipm";
-	
+
 	/**
 	 * Key for integer property. The ConjugateGradientIPM will throw an
 	 * exception if the conjugate gradient solver completes this many iterations
@@ -54,7 +51,7 @@ public class ConjugateGradientIPM extends IPM {
 	public static final String CG_MAX_ITER_KEY = CONFIG_PREFIX + ".maxcgiter";
 	/** Default value for CG_MAX_ITER_KEY property */
 	public static final int CG_MAX_ITER_DEFAULT = 1000000;
-	
+
 	/**
 	 * Key for double property. The conjugate gradient solver will terminate
 	 * as converged if the residual is less than this value times the
@@ -63,7 +60,7 @@ public class ConjugateGradientIPM extends IPM {
 	public static final String CG_REL_TOL_KEY = CONFIG_PREFIX + ".cgreltol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_REL_TOL_DEFAULT = 1e-10;
-	
+
 	/**
 	 * Key for double property. The conjugate gradient solver will terminate
 	 * as converged if the residual is less than this value.
@@ -71,7 +68,7 @@ public class ConjugateGradientIPM extends IPM {
 	public static final String CG_ABS_TOL_KEY = CONFIG_PREFIX + ".cgabstol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_ABS_TOL_DEFAULT = 1e-50;
-	
+
 	/**
 	 * Key for double property. The ConjugateGradientIPM will throw an
 	 * exception if the conjugate graident solver reaches an iterate
@@ -80,21 +77,21 @@ public class ConjugateGradientIPM extends IPM {
 	public static final String CG_DIV_TOL_KEY = CONFIG_PREFIX + ".cgdivtol";
 	/** Default value for CG_DIV_TOL_KEY property */
 	public static final double CG_DIV_TOL_DEFAULT = 1e5;
-	
+
 	private final int maxIter;
 	private final double relTol;
 	private final double absTol;
 	private final double divTol;
 
-	public ConjugateGradientIPM(ConfigBundle config) {
-		super(config);
-		
-		maxIter = config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
-		relTol = config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
-		absTol = config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
-		divTol = config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
+	public ConjugateGradientIPM() {
+		super();
+
+		maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
+		relTol = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
+		absTol = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
+		divTol = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
 	}
-	
+
 	@Override
 	protected void solveNormalSystem(SparseCCDoubleMatrix2D A, DoubleMatrix1D x, ConicProgram program) {
 		DoubleCG cg = new DoubleCG(x);
@@ -111,5 +108,4 @@ public class ConjugateGradientIPM extends IPM {
 			throw new IllegalArgumentException(e);
 		}
 	}
-
 }

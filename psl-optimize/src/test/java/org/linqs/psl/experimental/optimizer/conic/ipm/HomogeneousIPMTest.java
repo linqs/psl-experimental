@@ -20,7 +20,6 @@ package org.linqs.psl.experimental.optimizer.conic.ipm;
 import java.util.List;
 import java.util.Vector;
 
-import org.linqs.psl.config.EmptyBundle;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.ipm.HomogeneousIPM;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolverContractTest;
@@ -31,7 +30,7 @@ public class HomogeneousIPMTest extends ConicProgramSolverContractTest {
 	protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations()
 			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
 		Vector<HomogeneousIPM> solvers = new Vector<HomogeneousIPM>(1);
-		solvers.add(new HomogeneousIPM(new EmptyBundle()));
+		solvers.add(new HomogeneousIPM());
 		return solvers;
 	}
 

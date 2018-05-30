@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.reasoner.term.MemoryTermStore;

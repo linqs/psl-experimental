@@ -17,8 +17,7 @@
  */
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.Model;
 import org.linqs.psl.model.atom.ObservedAtom;
@@ -43,8 +42,6 @@ public class L1MaxMargin extends MaxMargin {
 
 	/**
 	 * Prefix of property keys used by this class.
-	 *
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "l1maxmargin";
 
@@ -78,10 +75,9 @@ public class L1MaxMargin extends MaxMargin {
 	private double obsvTrueWeight, obsvFalseWeight;
 	private List<LossAugmentingGroundRule> lossKernels, nonExtremeLossKernels;
 
-	public L1MaxMargin(Model model, Database rvDB, Database observedDB,
-			ConfigBundle config) {
-		super(model, rvDB, observedDB, config);
-		balanceLoss = (LossBalancingType) config.getEnum(BALANCE_LOSS_KEY, BALANCE_LOSS_DEFAULT);
+	public L1MaxMargin(Model model, Database rvDB, Database observedDB) {
+		super(model, rvDB, observedDB);
+		balanceLoss = (LossBalancingType)Config.getEnum(BALANCE_LOSS_KEY, BALANCE_LOSS_DEFAULT);
 	}
 
 	@Override

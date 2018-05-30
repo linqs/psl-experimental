@@ -17,8 +17,7 @@
  */
 package org.linqs.psl.experimental.reasoner.bool;
 
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.WeightedGroundRule;
@@ -83,11 +82,11 @@ public class UAIFormatReasoner extends ExecutableReasoner {
 	private final Task task;
 	private final int seed;
 
-	public UAIFormatReasoner(ConfigBundle config, String executablePath) {
-		super(config, executablePath, BASE_FILENAME, null, null);
+	public UAIFormatReasoner(String executablePath) {
+		super(executablePath, BASE_FILENAME, null, null);
 
-		task = (Task)config.getEnum(TASK_KEY, TASK_DEFAULT);
-		seed = config.getInt(SEED_KEY, SEED_DEFAULT);
+		task = (Task)Config.getEnum(TASK_KEY, TASK_DEFAULT);
+		seed = Config.getInt(SEED_KEY, SEED_DEFAULT);
 
 		this.executableOutputPath = BASE_FILENAME + "."  + task.toString();
 		this.args = new String[]{

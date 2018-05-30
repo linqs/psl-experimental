@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.partition;
 
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.experimental.optimizer.conic.program.Cone;
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
 import org.linqs.psl.experimental.optimizer.conic.program.NonNegativeOrthantCone;
@@ -25,12 +24,7 @@ import org.linqs.psl.experimental.optimizer.conic.program.SecondOrderCone;
 import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 
 public class ObjectiveCoefficientCompletePartitioner extends HierarchicalPartitioner {
-	
 	private static final int base = 2;
-
-	public ObjectiveCoefficientCompletePartitioner(ConfigBundle config) {
-		super(config);
-	}
 
 	@Override
 	protected double getWeight(LinearConstraint lc, Cone cone) {
@@ -39,7 +33,7 @@ public class ObjectiveCoefficientCompletePartitioner extends HierarchicalPartiti
 		}
 		else {
 			boolean hasFirstSingleton = false;
-			
+
 			for (Variable var : lc.getVariables().keySet()) {
 				if (isSingleton(var.getCone())) {
 					if (hasFirstSingleton) {
@@ -73,7 +67,7 @@ public class ObjectiveCoefficientCompletePartitioner extends HierarchicalPartiti
 					}
 				}
 			}
-			
+
 			return Double.POSITIVE_INFINITY;
 		}
 	}
@@ -82,5 +76,4 @@ public class ObjectiveCoefficientCompletePartitioner extends HierarchicalPartiti
 	protected void processAcceptedPartition() {
 		return;
 	}
-
 }

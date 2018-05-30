@@ -18,8 +18,7 @@
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
 import org.linqs.psl.application.learning.weight.WeightLearningApplication;
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.model.Model;
 import org.linqs.psl.model.atom.ObservedAtom;
@@ -51,13 +50,10 @@ import java.util.Map;
  * @author Bert Huang <bert@cs.umd.edu>
  */
 abstract public class MaxMargin extends WeightLearningApplication {
-
 	private static final Logger log = LoggerFactory.getLogger(MaxMargin.class);
 
 	/**
 	 * Prefix of property keys used by this class.
-	 *
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "maxmargin";
 
@@ -135,14 +131,14 @@ abstract public class MaxMargin extends WeightLearningApplication {
 
 	protected MinNormProgram normProgram;
 
-	public MaxMargin(Model model, Database rvDB, Database observedDB, ConfigBundle config) {
-		super(model.getRules(), rvDB, observedDB, false, config);
-		tolerance = config.getDouble(CUTTING_PLANE_TOLERANCE_KEY, CUTTING_PLANE_TOLERANCE_DEFAULT);
-		maxIter = config.getInt(MAX_ITER_KEY, MAX_ITER_DEFAULT);
-		nonnegativeWeights = config.getBoolean(NONNEGATIVE_WEIGHTS_KEY, NONNEGATIVE_WEIGHTS_DEFAULT);
-		slackPenalty = config.getDouble(SLACK_PENALTY_KEY, SLACK_PENALTY_DEFAULT);
-		scaleNorm = (NormScalingType) config.getEnum(SCALE_NORM_KEY, SCALE_NORM_DEFAULT);
-		squareSlack = config.getBoolean(SQUARE_SLACK_KEY, SQUARE_SLACK_DEFAULT);
+	public MaxMargin(Model model, Database rvDB, Database observedDB) {
+		super(model.getRules(), rvDB, observedDB, false);
+		tolerance = Config.getDouble(CUTTING_PLANE_TOLERANCE_KEY, CUTTING_PLANE_TOLERANCE_DEFAULT);
+		maxIter = Config.getInt(MAX_ITER_KEY, MAX_ITER_DEFAULT);
+		nonnegativeWeights = Config.getBoolean(NONNEGATIVE_WEIGHTS_KEY, NONNEGATIVE_WEIGHTS_DEFAULT);
+		slackPenalty = Config.getDouble(SLACK_PENALTY_KEY, SLACK_PENALTY_DEFAULT);
+		scaleNorm = (NormScalingType) Config.getEnum(SCALE_NORM_KEY, SCALE_NORM_DEFAULT);
+		squareSlack = Config.getBoolean(SQUARE_SLACK_KEY, SQUARE_SLACK_DEFAULT);
 	}
 
 	@Override
@@ -150,7 +146,7 @@ abstract public class MaxMargin extends WeightLearningApplication {
 		super.initGroundModel();
 
 		/* Sets up the MinNormProgram (in this method for appropriate throws declarations) */
-		normProgram = new MinNormProgram(mutableRules.size() + 1, nonnegativeWeights, config);
+		normProgram = new MinNormProgram(mutableRules.size() + 1, nonnegativeWeights);
 
 		/* Sets linear objective term */
 		double [] coefficients = new double[mutableRules.size() + 1];

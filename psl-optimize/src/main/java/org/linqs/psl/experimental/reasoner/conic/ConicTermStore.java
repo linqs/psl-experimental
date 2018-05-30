@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.experimental.reasoner.conic;
 
-import org.linqs.psl.config.ConfigBundle;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.model.rule.GroundRule;
@@ -56,10 +56,10 @@ public class ConicTermStore implements TermStore<ConicProgramProxy> {
 	private Map<GroundRule, ConicProgramProxy> groundTermMapping;
 	private Map<AtomFunctionVariable, VariableConicProgramProxy> vars;
 
-	public ConicTermStore(ConfigBundle config) {
+	public ConicTermStore() {
 		program = new ConicProgram();
 
-		solver = (ConicProgramSolver)config.getNewObject(CPS_KEY, CPS_DEFAULT);
+		solver = (ConicProgramSolver)Config.getNewObject(CPS_KEY, CPS_DEFAULT);
 		solver.setConicProgram(program);
 
 		terms = new ArrayList<ConicProgramProxy>();

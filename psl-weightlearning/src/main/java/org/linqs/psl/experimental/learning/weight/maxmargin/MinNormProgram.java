@@ -17,8 +17,7 @@
  */
 package org.linqs.psl.experimental.learning.weight.maxmargin;
 
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
@@ -44,8 +43,6 @@ public class MinNormProgram {
 
 	/**
 	 * Prefix of property keys used by this class.
-	 *
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "minnormprog";
 
@@ -53,10 +50,10 @@ public class MinNormProgram {
 	public static final String CPS_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.HomogeneousIPM";
 
 
-	public MinNormProgram(int size, boolean nonnegative, ConfigBundle config) {
+	public MinNormProgram(int size, boolean nonnegative) {
 		this.size = size;
 		program = new ConicProgram();
-		solver = (ConicProgramSolver)config.getNewObject(CPS_KEY, CPS_DEFAULT);
+		solver = (ConicProgramSolver)Config.getNewObject(CPS_KEY, CPS_DEFAULT);
 
 		variables = new Variable[size];
 		for (int i = 0; i < size; i++) {

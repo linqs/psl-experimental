@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.reasoner.conic;
 
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.model.rule.GroundRule;
@@ -38,11 +37,7 @@ import java.util.Map;
  * Reasoner that uses a {@link ConicProgramSolver} to minimize the total weighted
  * incompatibility.
  */
-public class ConicReasoner extends Reasoner {
-	public ConicReasoner(ConfigBundle config) {
-		super(config);
-	}
-
+public class ConicReasoner implements Reasoner {
 	@Override
 	public void optimize(TermStore termStore) {
 		// We specifically need a ConicTermStore.

@@ -28,7 +28,6 @@ import org.linqs.psl.database.DataStore;
 import org.linqs.psl.database.Database;
 import org.linqs.psl.database.DatabasePopulator;
 import org.linqs.psl.database.Partition;
-import org.linqs.psl.database.Queries;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.QueryAtom;
 import org.linqs.psl.model.predicate.Predicate;
@@ -92,7 +91,7 @@ public class QueryAtomsBuildDBStep implements BuildDBStep {
 				varArgs[i] = 1;
 			}
 		}
-		for (GroundAtom grAtom : Queries.getAllAtoms(inverseDB, (StandardPredicate)qPredicate)) {
+		for (GroundAtom grAtom : inverseDB.getAllGroundAtoms((StandardPredicate)qPredicate)) {
 			for (int i = 0; i < qTerms.length; i++) {
 				if (varArgs[i] == 0) {
 					qTerms[i] = grAtom.getArguments()[i];

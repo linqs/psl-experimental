@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-import org.linqs.psl.config.ConfigBundle;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.term.TermStore;
 
@@ -34,7 +34,7 @@ import java.nio.file.Paths;
  * A reasoner that calls just serialzes it's terms and then returns.
  * It doesn't even wait for a response.
  */
-public class DummySerialReasoner extends Reasoner {
+public class DummySerialReasoner implements Reasoner {
 	private static final Logger log = LoggerFactory.getLogger(DummySerialReasoner.class);
 
 	/**
@@ -51,9 +51,10 @@ public class DummySerialReasoner extends Reasoner {
 
 	private String path;
 
-	public DummySerialReasoner(ConfigBundle config) {
-		super(config);
-		path = config.getString(OUTPUT_PATH_KEY, OUTPUT_PATH_DEFAULT);
+	public DummySerialReasoner() {
+		super();
+
+		path = Config.getString(OUTPUT_PATH_KEY, OUTPUT_PATH_DEFAULT);
 	}
 
 	@Override
