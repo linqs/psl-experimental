@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.mosek;
 
-import org.linqs.psl.config.ConfigBundle;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -89,7 +89,7 @@ public class Mosek implements ConicProgramSolver {
 	 * or be free to choose either ("free").
 	 */
 	public static final String SOLVE_FORM_KEY = CONFIG_PREFIX + ".solveform";
-	public static final solveform SOLVE_FORM_DEFAULT = solveform.free;
+	public static final String SOLVE_FORM_DEFAULT = solveform.free.toString();
 
 	private ConicProgram program;
 	private final double dualityGap;
@@ -107,15 +107,15 @@ public class Mosek implements ConicProgramSolver {
 
 	private Env environment;
 
-	public Mosek(ConfigBundle config) {
+	public Mosek() {
 		environment = new mosek.Env();
 
 		program = null;
-		dualityGap = config.getDouble(DUALITY_GAP_THRESHOLD_KEY, DUALITY_GAP_THRESHOLD_DEFAULT);
-		pFeasTol = config.getDouble(PRIMAL_FEASIBILITY_THRESHOLD_KEY, PRIMAL_FEASIBILITY_THRESHOLD_DEFAULT);
-		dFeasTol = config.getDouble(DUAL_FEASIBILITY_THRESHOLD_KEY, DUAL_FEASIBILITY_THRESHOLD_DEFAULT);
-		numThreads = config.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);
-		solveForm = (solveform)config.getEnum(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT);
+		dualityGap = Config.getDouble(DUALITY_GAP_THRESHOLD_KEY, DUALITY_GAP_THRESHOLD_DEFAULT);
+		pFeasTol = Config.getDouble(PRIMAL_FEASIBILITY_THRESHOLD_KEY, PRIMAL_FEASIBILITY_THRESHOLD_DEFAULT);
+		dFeasTol = Config.getDouble(DUAL_FEASIBILITY_THRESHOLD_KEY, DUAL_FEASIBILITY_THRESHOLD_DEFAULT);
+		numThreads = Config.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);
+		solveForm = solveform.valueOf(Config.getString(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT));
 	}
 
 	@Override

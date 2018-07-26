@@ -17,21 +17,18 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.cg;
 
-import java.util.List;
-import java.util.Vector;
-
-import org.linqs.psl.config.EmptyBundle;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
 import org.linqs.psl.experimental.optimizer.conic.ipm.cg.ConjugateGradientIPM;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolverContractTest;
 
-public class ConjugateGradientIPMTest extends ConicProgramSolverContractTest {
+import java.util.List;
+import java.util.Vector;
 
+public class ConjugateGradientIPMTest extends ConicProgramSolverContractTest {
 	@Override
 	protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations() {
 		Vector<ConjugateGradientIPM> solvers = new Vector<ConjugateGradientIPM>(1);
-		solvers.add(new ConjugateGradientIPM(new EmptyBundle()));
+		solvers.add(new ConjugateGradientIPM());
 		return solvers;
 	}
-
 }

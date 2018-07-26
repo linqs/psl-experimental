@@ -17,6 +17,13 @@
  */
 package org.linqs.psl.experimental.datasplitter.splitstep;
 
+import org.linqs.psl.database.Database;
+import org.linqs.psl.database.Partition;
+import org.linqs.psl.database.loading.Inserter;
+import org.linqs.psl.model.atom.GroundAtom;
+import org.linqs.psl.model.predicate.StandardPredicate;
+import org.linqs.psl.model.term.Constant;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,14 +34,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.linqs.psl.database.Database;
-import org.linqs.psl.database.Partition;
-import org.linqs.psl.database.Queries;
-import org.linqs.psl.database.loading.Inserter;
-import org.linqs.psl.model.atom.GroundAtom;
-import org.linqs.psl.model.predicate.StandardPredicate;
-import org.linqs.psl.model.term.Constant;
 
 public class PredicateUniformSplitStep implements SplitStep {
 	private static final int NO_GROUP = -1;
@@ -71,7 +70,7 @@ public class PredicateUniformSplitStep implements SplitStep {
 		Collection<Set<GroundAtom>> groups;
 		List<Collection<Partition>> splits = new ArrayList<Collection<Partition>>();
 
-		List<GroundAtom> allAtoms = Queries.getAllAtoms(inputDB, target);
+		List<GroundAtom> allAtoms = inputDB.getAllGroundAtoms(target);
 
 		if (groupBy == NO_GROUP) {
 			groups = new ArrayList<Set<GroundAtom>>(allAtoms.size());

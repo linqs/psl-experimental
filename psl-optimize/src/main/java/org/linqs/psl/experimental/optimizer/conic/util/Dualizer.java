@@ -38,61 +38,61 @@ import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 
 public class Dualizer implements ConicProgramListener {
-	
+
 	private boolean checkedOut;
-	
+
 	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(2);
 	static {
 		supportedCones.add(ConeType.NonNegativeOrthantCone);
 	}
-	
+
 	private ConicProgram primalProgram, dualProgram;
 	private Map<Variable, LinearConstraint> primalVarsToDualCons;
 	private Map<Variable, Variable> primalVarsToDualVars;
 	private Map<LinearConstraint, Variable> primalConsToDualVars;
 	private Map<LinearConstraint, SOCVariablePair> varPairs;
-	
+
 	private Set<Cone> conesToDelete;
 	private Set<LinearConstraint> constraintsToDelete;
-	
+
 	private Set<Cone> newCones;
 	private Set<LinearConstraint> newConstraints;
-	
-	
+
+
 	public Dualizer(ConicProgram program) {
 		primalProgram = program;
-		
+
 		dualProgram = new ConicProgram();
 		primalVarsToDualCons = new HashMap<Variable, LinearConstraint>();
 		primalVarsToDualVars = new HashMap<Variable, Variable>();
 		primalConsToDualVars = new HashMap<LinearConstraint, Variable>();
 		varPairs = new HashMap<LinearConstraint, SOCVariablePair>();
-		
+
 		conesToDelete = new HashSet<Cone>();
 		constraintsToDelete = new HashSet<LinearConstraint>();
-		
+
 		newCones = new HashSet<Cone>(program.getCones());
 		newConstraints = new HashSet<LinearConstraint>(program.getConstraints());
-		
+
 		checkedOut = false;
-		
+
 		primalProgram.registerForConicProgramEvents(this);
 		dualProgram.registerForConicProgramEvents(this);
 	}
-	
+
 	public static boolean supportsConeTypes(Collection<ConeType> types) {
 		return supportedCones.containsAll(types);
 	}
-	
+
 	public ConicProgram getDualProgram() {
 		return dualProgram;
 	}
-	
+
 	public void verifyCheckedOut() {
 		if (!checkedOut)
 			throw new IllegalStateException("Dual program is not checked out.");
 	}
-	
+
 	public void verifyCheckedIn() {
 		if (checkedOut)
 			throw new IllegalStateException("Dual program is not checked in.");
@@ -103,7 +103,7 @@ public class Dualizer implements ConicProgramListener {
 		Variable primalVar, dualVar;
 		LinearConstraint primalCon, dualCon;
 		SOCVariablePair socPair;
-		
+
 		if (primalProgram.equals(sender)) {
 			switch (event) {
 			case MatricesCheckedIn:
@@ -124,7 +124,7 @@ public class Dualizer implements ConicProgramListener {
 						conesToDelete.add(dualVar.getCone());
 						varPairs.remove(entity);
 					}
-					
+
 					/*
 					 * Checks whether the linear constraint had a (primal) slack variable
 					 * (marked as such in the current dualization).
@@ -132,7 +132,9 @@ public class Dualizer implements ConicProgramListener {
 					 * variable for deletion and marks the slack variable as a new
 					 * variable
 					 */
-					for (Variable v : ((Set<Variable>) data[0])) {
+					@SuppressWarnings("unchecked")
+					Set<Variable> vars = (Set<Variable>)data[0];
+					for (Variable v : vars) {
 						if (primalVarsToDualVars.get(v) != null) {
 							conesToDelete.add(primalVarsToDualVars.get(v).getCone());
 							primalVarsToDualVars.remove(v);
@@ -148,7 +150,7 @@ public class Dualizer implements ConicProgramListener {
 				if (!newCones.remove(entity)) {
 					primalVar = ((NonNegativeOrthantCone) entity).getVariable();
 					dualVar = primalVarsToDualVars.get(primalVar);
-					
+
 					/*
 					 * If it's a slack variable, needs to ensure that the corresponding
 					 * primal constraint will be reprocessed on next check out
@@ -158,7 +160,7 @@ public class Dualizer implements ConicProgramListener {
 						conesToDelete.add(primalConsToDualVars.get(primalCon).getCone());
 						primalConsToDualVars.remove(primalCon);
 						newConstraints.add(primalCon);
-						
+
 						primalVarsToDualVars.remove(primalVar);
 						conesToDelete.remove(dualVar);
 					}
@@ -174,7 +176,7 @@ public class Dualizer implements ConicProgramListener {
 									break;
 								}
 							}
-							
+
 							if (!mappedTo) {
 								conesToDelete.add(var.getCone());
 							}
@@ -193,7 +195,7 @@ public class Dualizer implements ConicProgramListener {
 				primalVar = (Variable) entity;
 				if (!newCones.remove(primalVar.getCone())) {
 					dualVar = primalVarsToDualVars.get(primalVar);
-					
+
 					/*
 					 * If it's a slack variable, needs to ensure that the corresponding
 					 * primal constraint will be reprocessed on next check out
@@ -203,7 +205,7 @@ public class Dualizer implements ConicProgramListener {
 						conesToDelete.add(primalConsToDualVars.get(primalCon).getCone());
 						primalConsToDualVars.remove(primalCon);
 						newConstraints.add(primalCon);
-						
+
 						primalVarsToDualVars.remove(primalVar);
 						conesToDelete.remove(dualVar);
 					}
@@ -219,7 +221,7 @@ public class Dualizer implements ConicProgramListener {
 									break;
 								}
 							}
-							
+
 							if (!mappedTo) {
 								conesToDelete.add(var.getCone());
 							}
@@ -251,25 +253,25 @@ public class Dualizer implements ConicProgramListener {
 		else
 			throw new IllegalArgumentException("Unknown sender.");
 	}
-	
+
 	public void checkOutProgram() {
 		verifyCheckedIn();
 		primalProgram.verifyCheckedOut();
-		
+
 		Variable slack, primalVar, dualVar;
 		LinearConstraint primalCon, dualCon;
 		Double coeff;
-		
+
 		dualProgram.unregisterForConicProgramEvents(this);
-		
+
 		/* Deletes cones marked for deletion */
 		for (Cone cone : conesToDelete)
 			cone.delete();
-				
+
 		/* Deletes constraints marked for deletion */
 		for (LinearConstraint con : constraintsToDelete)
 			con.delete();
-		
+
 		/* Processes new constraints */
 		for (LinearConstraint con : newConstraints) {
 			slack = null;
@@ -281,7 +283,7 @@ public class Dualizer implements ConicProgramListener {
 					break;
 				}
 			}
-			
+
 			/* If a slack variable is found, it will be represented as a dual slack variable */
 			if (slack != null) {
 				dualVar = dualProgram.createNonNegativeOrthantCone().getVariable();
@@ -307,7 +309,7 @@ public class Dualizer implements ConicProgramListener {
 				varPairs.put(con, pair);
 			}
 		}
-		
+
 		/* Processes new cones */
 		for (Cone cone : newCones) {
 			if (cone instanceof NonNegativeOrthantCone) {
@@ -331,20 +333,20 @@ public class Dualizer implements ConicProgramListener {
 				throw new IllegalStateException("Unsupported cone type." +
 					"Only NonNegativeOrthantCone is supported.");
 		}
-		
+
 		/* Puts it all together */
 		for (LinearConstraint pCon : primalProgram.getConstraints()) {
 			dualVar = primalConsToDualVars.get(pCon);
 			if (dualVar == null)
 				dualVar = varPairs.get(pCon).inner;
-			
+
 			for (Map.Entry<Variable, Double> e : pCon.getVariables().entrySet()) {
 				dualCon = primalVarsToDualCons.get(e.getKey());
 				if (dualCon != null)
 					dualCon.setVariable(dualVar, e.getValue());
 			}
 		}
-		
+
 		/*
 		 * Scales and flips constraints in dual program to make slacks have
 		 * coefficients of 1.
@@ -362,34 +364,34 @@ public class Dualizer implements ConicProgramListener {
 				}
 			}
 		}
-		
+
 		dualProgram.registerForConicProgramEvents(this);
 
 		conesToDelete.clear();
 		constraintsToDelete.clear();
 		newCones.clear();
 		newConstraints.clear();
-		
+
 		checkedOut = true;
 	}
-	
+
 	public void checkInProgram() {
 		verifyCheckedOut();
 		dualProgram.verifyCheckedIn();
-		
+
 		DoubleMatrix1D x = primalProgram.getX();
-		
+
 		for (Map.Entry<Variable, LinearConstraint> e : primalVarsToDualCons.entrySet()) {
 			x.set(primalProgram.getIndex(e.getKey()), e.getValue().getLagrange());
 		}
-		
+
 		for (Map.Entry<Variable, Variable> e : primalVarsToDualVars.entrySet()) {
 			x.set(primalProgram.getIndex(e.getKey()), e.getValue().getDualValue());
 		}
-		
+
 		checkedOut = false;
 	}
-	
+
 	private class SOCVariablePair {
 		private Variable inner;
 	}

@@ -17,15 +17,6 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.partition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.experimental.optimizer.conic.program.Cone;
 import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -49,6 +40,14 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+
 abstract public class HierarchicalPartitioner extends AbstractCompletePartitioner
 		implements ConicProgramListener {
 	
@@ -67,10 +66,6 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 	static {
 		supportedCones.add(ConeType.NonNegativeOrthantCone);
 		supportedCones.add(ConeType.SecondOrderCone);
-	}
-	
-	public HierarchicalPartitioner(ConfigBundle config) {
-		super();
 	}
 	
 	@Override

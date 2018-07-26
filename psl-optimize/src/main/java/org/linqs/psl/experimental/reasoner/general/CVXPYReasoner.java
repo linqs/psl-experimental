@@ -17,7 +17,6 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-import org.linqs.psl.config.ConfigBundle;
 import org.linqs.psl.reasoner.ExecutableReasoner;
 import org.linqs.psl.reasoner.term.TermStore;
 
@@ -36,16 +35,16 @@ public class CVXPYReasoner extends ExecutableReasoner {
 	public static final String RESULTS_PATH =
 			Paths.get(System.getProperty("java.io.tmpdir"), "psl_cvxpy_results.json").toString();
 
-	public CVXPYReasoner(ConfigBundle config) {
-		super(config);
+	public CVXPYReasoner() {
+		super();
 
 		this.executableInputPath = MODEL_PATH;
 		this.executableOutputPath = RESULTS_PATH;
 		this.args = new String[]{MODEL_PATH, RESULTS_PATH};
 	}
 
-	public CVXPYReasoner(ConfigBundle config, String executablePath) {
-		super(config, executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
+	public CVXPYReasoner(String executablePath) {
+		super(executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
 	}
 
 	@Override

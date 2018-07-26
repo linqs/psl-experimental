@@ -17,17 +17,9 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
-import org.linqs.psl.config.Factory;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolver;
-import org.linqs.psl.experimental.optimizer.conic.ipm.solver.CholeskyFactory;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.NormalSystemSolver;
-import org.linqs.psl.experimental.optimizer.conic.ipm.solver.NormalSystemSolverFactory;
 import org.linqs.psl.experimental.optimizer.conic.program.Cone;
 import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -35,8 +27,6 @@ import org.linqs.psl.experimental.optimizer.conic.program.NonNegativeOrthantCone
 import org.linqs.psl.experimental.optimizer.conic.program.SecondOrderCone;
 import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 import org.linqs.psl.experimental.optimizer.conic.util.Dualizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
@@ -45,6 +35,12 @@ import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Primal-dual interior-point method using the self-dual homogeneous model.
@@ -72,8 +68,6 @@ public class HomogeneousIPM implements ConicProgramSolver {
 	
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "hipm";
 	
@@ -141,18 +135,11 @@ public class HomogeneousIPM implements ConicProgramSolver {
 	public static final double DELTA_DEFAULT = 0.5;
 	
 	/**
-	 * Key for {@link Factory} or String property.
-	 * 
-	 * Should be set to a {@link NormalSystemSolverFactory} or the fully qualified
+	 * Should be set to a {@link NormalSystemSolver} or the fully qualified
 	 * name of one. Will be used to instantiate a {@link NormalSystemSolver}.
 	 */
 	public static final String NORMAL_SYS_SOLVER_KEY = CONFIG_PREFIX + ".normalsolver";
-	/**
-	 * Default value for NORMAL_SYS_SOLVER_KEY.
-	 * 
-	 * Value is instance of {@link CholeskyFactory}. 
-	 */
-	public static final NormalSystemSolverFactory NORMAL_SYS_SOLVER_DEFAULT = new CholeskyFactory();
+	public static final String NORMAL_SYS_SOLVER_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.solver.Cholesky";
 	
 	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(2);
 	static {
@@ -238,20 +225,18 @@ public class HomogeneousIPM implements ConicProgramSolver {
 	private DoubleMatrix1D scratchM1;
 	private DoubleMatrix1D scratchM2;
 	
-	public HomogeneousIPM(ConfigBundle config)
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-		tryDualize = config.getBoolean(DUALIZE_KEY, DUALIZE_DEFAULT);
-		infeasibilityThreshold = config.getDouble(INFEASIBILITY_THRESHOLD_KEY, INFEASIBILITY_THRESHOLD_DEFAULT);
-		gapThreshold = config.getDouble(GAP_THRESHOLD_KEY, GAP_THRESHOLD_DEFAULT);
-		tauThreshold = config.getDouble(TAU_THRESHOLD_KEY, TAU_THRESHOLD_DEFAULT);
-		muThreshold = config.getDouble(MU_THRESHOLD_KEY, MU_THRESHOLD_DEFAULT);
-		beta = config.getDouble(BETA_KEY, BETA_DEFAULT);
-		NormalSystemSolverFactory solverFactory = (NormalSystemSolverFactory) config.getFactory(NORMAL_SYS_SOLVER_KEY, NORMAL_SYS_SOLVER_DEFAULT);
-		solver = solverFactory.getNormalSystemSolver(config);
+	public HomogeneousIPM() {
+		tryDualize = Config.getBoolean(DUALIZE_KEY, DUALIZE_DEFAULT);
+		infeasibilityThreshold = Config.getDouble(INFEASIBILITY_THRESHOLD_KEY, INFEASIBILITY_THRESHOLD_DEFAULT);
+		gapThreshold = Config.getDouble(GAP_THRESHOLD_KEY, GAP_THRESHOLD_DEFAULT);
+		tauThreshold = Config.getDouble(TAU_THRESHOLD_KEY, TAU_THRESHOLD_DEFAULT);
+		muThreshold = Config.getDouble(MU_THRESHOLD_KEY, MU_THRESHOLD_DEFAULT);
+		beta = Config.getDouble(BETA_KEY, BETA_DEFAULT);
+		solver = (NormalSystemSolver)Config.getNewObject(NORMAL_SYS_SOLVER_KEY, NORMAL_SYS_SOLVER_DEFAULT);
 		
 		if (beta <= 0 || beta >= 1)
 			throw new IllegalArgumentException("Property " + BETA_KEY + " must be in (0,1).");
-		delta = config.getDouble(DELTA_KEY, DELTA_DEFAULT);
+		delta = Config.getDouble(DELTA_KEY, DELTA_DEFAULT);
 		if (delta < 0 || delta > 1)
 			throw new IllegalArgumentException("Property " + DELTA_KEY + " must be in [0,1].");
 		

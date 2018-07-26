@@ -46,8 +46,6 @@
 	<modules>
 		<module>psl-datasplitter</module>
 		<module>psl-optimize</module>
-		<module>psl-sampler</module>
-		<module>psl-weightlearning</module>
 		<module>psl-mosek</module>
 	</modules>
 
@@ -106,6 +104,7 @@
 					<target>1.7</target>
 					<compilerArgs>
 						<arg>-Xlint:deprecation</arg>
+						<arg>-Xlint:all</arg>
 					</compilerArgs>
 				</configuration>
 			</plugin>

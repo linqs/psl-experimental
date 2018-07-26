@@ -24,14 +24,12 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
 
 /**
  * Factory for constructing {@link DoubleIdentity} preconditioners.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class IdentityPreconditionerFactory implements PreconditionerFactory {
-
 	@Override
 	public DoublePreconditioner getPreconditioner(ConicProgram program) {
 		return new DoubleIdentity();
 	}
-
 }
