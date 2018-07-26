@@ -89,7 +89,7 @@ public class Mosek implements ConicProgramSolver {
 	 * or be free to choose either ("free").
 	 */
 	public static final String SOLVE_FORM_KEY = CONFIG_PREFIX + ".solveform";
-	public static final solveform SOLVE_FORM_DEFAULT = solveform.free;
+	public static final String SOLVE_FORM_DEFAULT = solveform.free.toString();
 
 	private ConicProgram program;
 	private final double dualityGap;
@@ -115,7 +115,7 @@ public class Mosek implements ConicProgramSolver {
 		pFeasTol = Config.getDouble(PRIMAL_FEASIBILITY_THRESHOLD_KEY, PRIMAL_FEASIBILITY_THRESHOLD_DEFAULT);
 		dFeasTol = Config.getDouble(DUAL_FEASIBILITY_THRESHOLD_KEY, DUAL_FEASIBILITY_THRESHOLD_DEFAULT);
 		numThreads = Config.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);
-		solveForm = (solveform)Config.getEnum(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT);
+		solveForm = solveform.valueOf(Config.getString(SOLVE_FORM_KEY, SOLVE_FORM_DEFAULT));
 	}
 
 	@Override

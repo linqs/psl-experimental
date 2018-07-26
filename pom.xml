@@ -46,8 +46,6 @@
 	<modules>
 		<module>psl-datasplitter</module>
 		<module>psl-optimize</module>
-		<module>psl-sampler</module>
-		<module>psl-weightlearning</module>
 		<module>psl-mosek</module>
 	</modules>
 
