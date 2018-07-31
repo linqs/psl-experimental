@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2017 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.solver;
 
-import java.util.Set;
-
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
-import org.linqs.psl.config.EmptyBundle;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.partition.ConicProgramPartition;
 import org.linqs.psl.experimental.optimizer.conic.partition.ObjectiveCoefficientPartitioner;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
@@ -44,6 +40,8 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 
+import java.util.Set;
+
 /**
  * Solves normal systems using the Schur's complement method, where the complement
  * is complementary to a block-diagonal submatrix found by partitioning.
@@ -51,16 +49,14 @@ import cern.jet.math.tdouble.DoubleFunctions;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class BlockSolver implements NormalSystemSolver {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(BlockSolver.class);
-	
+
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "blocksolver";
-	
+
 	/**
 	 * Key for integer property. The BlockSolver will throw an
 	 * exception if the conjugate gradient solver completes this many iterations
@@ -69,7 +65,7 @@ public class BlockSolver implements NormalSystemSolver {
 	public static final String CG_MAX_ITER_KEY = CONFIG_PREFIX + ".maxcgiter";
 	/** Default value for CG_MAX_ITER_KEY property */
 	public static final int CG_MAX_ITER_DEFAULT = 1000000;
-	
+
 	/**
 	 * Key for double property. The conjugate gradient solver will terminate
 	 * as converged if the residual is less than this value times the
@@ -78,7 +74,7 @@ public class BlockSolver implements NormalSystemSolver {
 	public static final String CG_REL_TOL_KEY = CONFIG_PREFIX + ".cgreltol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_REL_TOL_DEFAULT = 10e-10;
-	
+
 	/**
 	 * Key for double property. The conjugate gradient solver will terminate
 	 * as converged if the residual is less than this value.
@@ -86,7 +82,7 @@ public class BlockSolver implements NormalSystemSolver {
 	public static final String CG_ABS_TOL_KEY = CONFIG_PREFIX + ".cgabstol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_ABS_TOL_DEFAULT = 10e-50;
-	
+
 	/**
 	 * Key for double property. The BlockSolver will throw an
 	 * exception if the conjugate graident solver reaches an iterate
@@ -95,56 +91,56 @@ public class BlockSolver implements NormalSystemSolver {
 	public static final String CG_DIV_TOL_KEY = CONFIG_PREFIX + ".cgdivtol";
 	/** Default value for CG_DIV_TOL_KEY property */
 	public static final double CG_DIV_TOL_DEFAULT = 10e5;
-	
+
 	/**
 	 * Key for non-negative integer property. The BlockSolver preconditions
 	 * the Schur's complement matrix by a truncated series summation. Higher
 	 * values generally result in fewer conjugate gradient iterations, but each
-	 * iteration is more time consuming. 
+	 * iteration is more time consuming.
 	 */
 	public static final String PRECONDITIONER_TERMS_KEY = CONFIG_PREFIX + ".preconditionerterms";
 	/** Default value for PRECONDITIONER_TERMS_KEY property */
 	public static final int PRECONDITIONER_TERMS_DEFAULT = 1;
-	
+
 	protected final int maxIter;
 	protected final double relTol;
 	protected final double absTol;
 	protected final double divTol;
 	protected final int terms;
-	
+
 	protected ConicProgram program;
 	protected ConicProgramPartition partition;
 	protected SparseDoubleCholeskyDecomposition choleskyB;
 	protected SparseDoubleCholeskyDecomposition choleskyD;
-	
+
 	protected DoubleMatrix1D scratch;
-	
+
 	protected DoubleCG cg;
 	protected DoubleIterationMonitor monitor;
 	private DoubleMatrix1D x;
-	
+
 	protected DoubleMatrix2D B, C, D;
 	protected int[] rowAssignments;
 	protected boolean[] cutRows;
-	
-	public BlockSolver(ConfigBundle config) {
-		maxIter = config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
-		relTol  = config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
-		absTol  = config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
-		divTol  = config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
-		
-		terms = config.getInt(PRECONDITIONER_TERMS_KEY, PRECONDITIONER_TERMS_DEFAULT);
+
+	public BlockSolver() {
+		maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
+		relTol  = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
+		absTol  = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
+		divTol  = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
+
+		terms = Config.getInt(PRECONDITIONER_TERMS_KEY, PRECONDITIONER_TERMS_DEFAULT);
 		if (terms < 0)
 			throw new IllegalArgumentException("Property " + PRECONDITIONER_TERMS_KEY + " must be non-negative.");
-		
+
 		monitor = new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol);
 		monitor.setIterationReporter(new DoubleIterationReporter() {
-			
+
 			@Override
 			public void monitor(double r, DoubleMatrix1D x, int i) {
 				monitor(r, i);
 			}
-			
+
 			@Override
 			public void monitor(double r, int i) {
 				if (i % 50 == 0)
@@ -156,14 +152,14 @@ public class BlockSolver implements NormalSystemSolver {
 	@Override
 	public void setConicProgram(ConicProgram program) {
 		this.program = program;
-		ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner(new EmptyBundle());
+		ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner();
 		partitioner.setConicProgram(program);
 		partition = partitioner.getPartition();
 		Set<LinearConstraint> cutConstraints = partition.getCutConstraints();
-		
+
 		/* Initializes the scratch vector used by the preconditioner */
 		scratch = new DenseDoubleMatrix1D(program.getNumLinearConstraints() - cutConstraints.size());
-		
+
 		rowAssignments = new int[program.getNumLinearConstraints()];
 		cutRows = new boolean[program.getNumLinearConstraints()];
 		int nextUncut = 0;
@@ -180,11 +176,11 @@ public class BlockSolver implements NormalSystemSolver {
 				cutRows[index] = false;
 			}
 		}
-		
+
 		x = new DenseDoubleMatrix1D(partition.getCutConstraints().size());
 		cg = new DoubleCG(x);
 		cg.setIterationMonitor(monitor);
-		
+
 		log.debug("Cut {} constraints out of {}", partition.getCutConstraints().size(), program.getNumLinearConstraints());
 	}
 
@@ -194,13 +190,13 @@ public class BlockSolver implements NormalSystemSolver {
 		int numCut = partition.getCutConstraints().size();
 		if (numCut > 0) {
 			int numUncut = A.rows() - numCut;
-			
+
 			B = new SparseDoubleMatrix2D(numUncut, numUncut, numUncut * 4, 0.2, 0.5);
 			C = new SparseDoubleMatrix2D(numUncut, numCut, numUncut * 2, 0.2, 0.5);
 			D = new SparseDoubleMatrix2D(numCut, numCut, numCut * 4, 0.2, 0.5);
-			
+
 			A.forEachNonZero(new IntIntDoubleFunction() {
-				
+
 				@Override
 				public double apply(int first, int second, double third) {
 					boolean cutFirst = cutRows[first];
@@ -217,48 +213,48 @@ public class BlockSolver implements NormalSystemSolver {
 					else if (!cutFirst) {
 						B.setQuick(rowAssignments[first], rowAssignments[second], third);
 					}
-					
+
 					return third;
 				}
 			});
-			
+
 			B = ((SparseDoubleMatrix2D) B).getColumnCompressed(false);
 			C = ((SparseDoubleMatrix2D) C).getColumnCompressed(false);
 			D = ((SparseDoubleMatrix2D) D).getColumnCompressed(false);
-			
+
 			choleskyB = new SparseDoubleCholeskyDecomposition(B, 1);
 			choleskyD = new SparseDoubleCholeskyDecomposition(D, 1);
-			
+
 			cg.setPreconditioner(new DoublePreconditioner() {
-				
+
 				@Override
 				public DoubleMatrix1D transApply(DoubleMatrix1D b, DoubleMatrix1D x) {
 					return apply(b, x);
 				}
-				
+
 				@Override
 				public void setMatrix(DoubleMatrix2D A) {
 					/* Intentionally blank */
 				}
-				
+
 				@Override
 				public DoubleMatrix1D apply(DoubleMatrix1D b, DoubleMatrix1D x) {
 					DoubleMatrix1D x1 = null;
 					x.assign(b);
 					choleskyD.solve(x);
-					
+
 					for (int i = 0; i < terms; i++) {
 						if (i == 0)
 							x1 = x.copy();
-						
+
 						C.zMult(x1, scratch);
 						choleskyB.solve(scratch);
 						C.zMult(scratch, x1, 1.0, 0.0, true);
 						choleskyD.solve(x1);
-						
+
 						x.assign(x1, DoubleFunctions.plus);
 					}
-					
+
 					return x;
 				}
 			});
@@ -266,7 +262,7 @@ public class BlockSolver implements NormalSystemSolver {
 		else {
 			choleskyB = new SparseDoubleCholeskyDecomposition(A, 1);
 		}
-		
+
 		log.trace("Finished setting A.");
 	}
 
@@ -277,34 +273,34 @@ public class BlockSolver implements NormalSystemSolver {
 			DoubleMatrix1D b0 = new DenseDoubleMatrix1D(D.rows());
 			DoubleMatrix1D b1 = new DenseDoubleMatrix1D(B.rows());
 			DoubleMatrix1D y0 = new DenseDoubleMatrix1D(D.rows());
-			
+
 			for (int i = 0; i < b.size(); i++) {
 				if (cutRows[i])
 					b0.set(rowAssignments[i], b.getQuick(i));
 				else
 					b1.set(rowAssignments[i], b.getQuick(i));
 			}
-			
+
 			DoubleMatrix1D y1 = b1.copy();
-			
+
 			DoubleMatrix1D b0Scratch = b0.copy();
 			DoubleMatrix1D b1Scratch = b1.copy();
-			
+
 			/* Sets b0Scratch to b0 - C' * inv(B) * b1 */
 			choleskyB.solve(b1Scratch);
 			b0Scratch.assign(C.zMult(b1Scratch, null, 1.0, 0.0, true), DoubleFunctions.minus);
-			
+
 			try {
 				cg.solve(new SchurComplement(), b0Scratch, y0);
 				log.debug("Solved for complement in {} iterations.", monitor.iterations());
 			} catch (IterativeSolverDoubleNotConvergedException e) {
 				throw new IllegalArgumentException(e);
 			}
-			
+
 			C.zMult(y0, b1Scratch);
 			y1.assign(b1Scratch, DoubleFunctions.minus);
 			choleskyB.solve(y1);
-			
+
 			/* Puts the results back into b */
 			for (int i = 0; i < rowAssignments.length; i++) {
 				b.setQuick(i, (cutRows[i]) ? y0.getQuick(rowAssignments[i]) : y1.getQuick(rowAssignments[i]));
@@ -314,11 +310,11 @@ public class BlockSolver implements NormalSystemSolver {
 			choleskyB.solve(b);
 		}
 	}
-	
+
 	protected class SchurComplement extends SparseDoubleMatrix2D {
-		
+
 		private static final long serialVersionUID = 112358132134L;
-		
+
 		private final DoubleMatrix1D scratch0;
 		private final DoubleMatrix1D scratch1;
 
@@ -327,35 +323,34 @@ public class BlockSolver implements NormalSystemSolver {
 			scratch0 = new DenseDoubleMatrix1D(C.columns());
 			scratch1 = new DenseDoubleMatrix1D(C.rows());
 		}
-		
+
 		@Override
 		public DoubleMatrix1D zMult(DoubleMatrix1D y, DoubleMatrix1D z, double alpha, double beta, boolean transposeA) {
 			DoubleMatrix1D toAdd = null;
 			if (beta != 0.0)
 				toAdd = z.copy();
-			
+
 			zMult(y, z);
-			
+
 			if (alpha != 1.0)
 				z.assign(DoubleFunctions.mult(alpha));
-			
+
 			if (beta != 0.0)
 				z.assign(toAdd, DoubleFunctions.plus);
-			
+
 			return z;
 		}
-		
+
 		@Override
 		public DoubleMatrix1D zMult(DoubleMatrix1D y, DoubleMatrix1D z) {C.zMult(y, scratch1);
 			choleskyB.solve(scratch1);
 			C.zMult(scratch1, scratch0, 1.0, 0.0, true);
-			
+
 			D.zMult(y, z);
-			
+
 			z.assign(scratch0, DoubleFunctions.minus);
-			
+
 			return z;
 		}
 	}
-
 }

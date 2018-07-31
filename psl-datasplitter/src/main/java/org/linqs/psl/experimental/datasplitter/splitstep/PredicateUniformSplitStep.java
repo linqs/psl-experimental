@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2017 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
  */
 package org.linqs.psl.experimental.datasplitter.splitstep;
 
+import org.linqs.psl.database.Database;
+import org.linqs.psl.database.Partition;
+import org.linqs.psl.database.loading.Inserter;
+import org.linqs.psl.model.atom.GroundAtom;
+import org.linqs.psl.model.predicate.StandardPredicate;
+import org.linqs.psl.model.term.Constant;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,14 +34,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.linqs.psl.database.Database;
-import org.linqs.psl.database.Partition;
-import org.linqs.psl.database.Queries;
-import org.linqs.psl.database.loading.Inserter;
-import org.linqs.psl.model.atom.GroundAtom;
-import org.linqs.psl.model.predicate.StandardPredicate;
-import org.linqs.psl.model.term.Constant;
 
 public class PredicateUniformSplitStep implements SplitStep {
 	private static final int NO_GROUP = -1;
@@ -56,10 +55,10 @@ public class PredicateUniformSplitStep implements SplitStep {
 	}
 
 	/**
-	 * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each 
+	 * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each
 	 * atom as its own group
 	 * @param target Predicate whose groundings to split on
-	 * @param numFolds 
+	 * @param numFolds
 	 */
 	public PredicateUniformSplitStep(StandardPredicate target, int numFolds) {
 		this(target, numFolds, NO_GROUP);
@@ -71,7 +70,7 @@ public class PredicateUniformSplitStep implements SplitStep {
 		Collection<Set<GroundAtom>> groups;
 		List<Collection<Partition>> splits = new ArrayList<Collection<Partition>>();
 
-		Set<GroundAtom> allAtoms = Queries.getAllAtoms(inputDB, target);
+		List<GroundAtom> allAtoms = inputDB.getAllGroundAtoms(target);
 
 		if (groupBy == NO_GROUP) {
 			groups = new ArrayList<Set<GroundAtom>>(allAtoms.size());
@@ -90,12 +89,12 @@ public class PredicateUniformSplitStep implements SplitStep {
 				groupMap.get(key).add(atom);
 			}
 			groups = groupMap.values();
-		}		
+		}
 
 		List<Partition> allPartitions = new ArrayList<Partition>();
 		List<Inserter> inserters = new ArrayList<Inserter>();
 		for (int i = 0; i < numFolds; i++) {
-			Partition nextPartition = inputDB.getDataStore().getNewPartition(); 
+			Partition nextPartition = inputDB.getDataStore().getNewPartition();
 			allPartitions.add(nextPartition);
 			inserters.add(inputDB.getDataStore().getInserter(target, nextPartition));
 		}
@@ -104,7 +103,7 @@ public class PredicateUniformSplitStep implements SplitStep {
 
 		for (int i = 0; i < numFolds; i++) {
 			Set<Partition> partitions = new TreeSet<Partition>();
-			for (int j = 0; j < numFolds; j++) 
+			for (int j = 0; j < numFolds; j++)
 				if (j != i)
 					partitions.add(allPartitions.get(j));
 			splits.add(partitions);
@@ -113,13 +112,13 @@ public class PredicateUniformSplitStep implements SplitStep {
 		return splits;
 	}
 
-	private void insertIntoPartitions(Collection<Set<GroundAtom>> groups, 
+	private void insertIntoPartitions(Collection<Set<GroundAtom>> groups,
 			List<Inserter> inserters, Random random) {
-		
+
 		ArrayList<Set<GroundAtom>> groupList = new ArrayList<Set<GroundAtom>>(groups.size());
 		groupList.addAll(groups);
 		Collections.shuffle(groupList, random);
-		
+
 		int j = 0;
 		for (Set<GroundAtom> group : groupList) {
 			for (GroundAtom atom : group)

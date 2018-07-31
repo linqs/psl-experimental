@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2017 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,33 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.linqs.psl.config.EmptyBundle;
 import org.linqs.psl.experimental.optimizer.conic.partition.ConicProgramPartition;
 import org.linqs.psl.experimental.optimizer.conic.partition.ObjectiveCoefficientPartitioner;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 import org.linqs.psl.experimental.optimizer.conic.program.LinearConstraint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cern.colt.function.tdouble.IntIntDoubleFunction;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.decomposition.SparseDoubleCholeskyDecomposition;
 import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class BlockPreconditioner implements DoublePreconditioner {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(BlockPreconditioner.class);
-	
+
 	protected final ConicProgram program;
 	protected final ConicProgramPartition partition;
 	protected SparseDoubleCholeskyDecomposition cholesky;
-	
+
 	public BlockPreconditioner(ConicProgram program) {
 		this.program = program;
-		ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner(new EmptyBundle());
+		ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner();
 		partitioner.setConicProgram(program);
 		partition = partitioner.getPartition();
 	}
@@ -70,24 +69,24 @@ public class BlockPreconditioner implements DoublePreconditioner {
 		for (LinearConstraint con : cutConstraints) {
 			cutRows.add(program.getIndex(con));
 		}
-		
+
 		localA.forEachNonZero(new IntIntDoubleFunction() {
-			
+
 			@Override
 			public double apply(int first, int second, double third) {
 				boolean containsFirst = cutRows.contains(first);
 				if (first == second && containsFirst)
 					return 1;
-				
+
 				boolean containsSecond = cutRows.contains(second);
-				
+
 				if (containsFirst || containsSecond)
 					return 0;
 				else
 					return third;
 			}
 		});
-		
+
 		cholesky = new SparseDoubleCholeskyDecomposition(localA, 1);
 		log.trace("Matrix set.");
 	}

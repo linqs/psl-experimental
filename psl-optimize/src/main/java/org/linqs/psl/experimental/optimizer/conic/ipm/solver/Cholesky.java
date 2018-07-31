@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2017 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
 
 /**
  * Solves normal systems using a Cholesky factorization.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class Cholesky implements NormalSystemSolver {
-	
 	private SparseDoubleCholeskyDecomposition decomposition;
 
 	@Override
@@ -46,5 +45,4 @@ public class Cholesky implements NormalSystemSolver {
 	public void solve(DoubleMatrix1D b) {
 		decomposition.solve(b);
 	}
-
 }

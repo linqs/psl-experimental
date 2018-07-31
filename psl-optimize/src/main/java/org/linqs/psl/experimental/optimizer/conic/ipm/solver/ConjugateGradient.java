@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2017 The Regents of the University of California
+ * Copyright 2013-2018 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,10 @@
  */
 package org.linqs.psl.experimental.optimizer.conic.ipm.solver;
 
-import org.linqs.psl.config.ConfigBundle;
-import org.linqs.psl.config.ConfigManager;
-import org.linqs.psl.config.Factory;
+import org.linqs.psl.config.Config;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.IdentityPreconditionerFactory;
 import org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.PreconditionerFactory;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
@@ -37,6 +33,8 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoubleIdentity;
 import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix1D;
 import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Solves normal systems using a conjugate gradient method.
@@ -49,8 +47,6 @@ public class ConjugateGradient implements NormalSystemSolver {
 	
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
-	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "cgsolver";
 	
@@ -90,18 +86,11 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final double CG_DIV_TOL_DEFAULT = 10e5;
 	
 	/**
-	 * Key for {@link Factory} or String property.
-	 * 
 	 * Should be set to a {@link PreconditionerFactory} or the fully qualified
 	 * name of one. Will be used to instantiate a {@link DoublePreconditioner}.
 	 */
 	public static final String PRECONDITIONER_KEY = CONFIG_PREFIX + ".preconditioner";
-	/**
-	 * Default value for PRECONDITIONER_KEY.
-	 * 
-	 * Value is instance of {@link DoubleIdentity}. 
-	 */
-	public static final PreconditionerFactory PRECONDITIONER_DEFAULT = new IdentityPreconditionerFactory();
+	public static final String PRECONDITIONER_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.IdentityPreconditionerFactory";
 	
 	private final int maxIter;
 	private final double relTol;
@@ -115,14 +104,13 @@ public class ConjugateGradient implements NormalSystemSolver {
 	private DoubleMatrix2D A;
 	private DoubleMatrix1D x;
 	
-	public ConjugateGradient(ConfigBundle config)
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-		maxIter = config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
-		relTol  = config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
-		absTol  = config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
-		divTol  = config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
+	public ConjugateGradient() {
+		maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
+		relTol  = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
+		absTol  = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
+		divTol  = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
 		
-		preconditionerFactory = (PreconditionerFactory) config.getFactory(PRECONDITIONER_KEY, PRECONDITIONER_DEFAULT);
+		preconditionerFactory = (PreconditionerFactory)Config.getNewObject(PRECONDITIONER_KEY, PRECONDITIONER_DEFAULT);
 		
 		monitor = new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol);
 		monitor.setIterationReporter(new DoubleIterationReporter() {
