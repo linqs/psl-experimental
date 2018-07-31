@@ -67,8 +67,7 @@ public class IPM implements ConicProgramSolver {
 	/**
 	 * Key for boolean property. If true, the IPM will dualize the conic
 	 * program before solving it. The IPM will substitute the results back
-	 * into the original problem, so this should only affect the computational
-	 * cost of {@link #solve(ConicProgram)}, not the quality of the solution.
+	 * into the original problem.
 	 *
 	 * @see Dualizer
 	 */
