@@ -73,7 +73,7 @@ public class JSONSerialTermStore
 
 		// Update the random variable atoms with their new values.
 		for (Map.Entry<Integer, Double> entry : input.solution.entrySet()) {
-			variableIds.getKey(entry.getKey()).setValue(entry.getValue().doubleValue());
+			variableIds.getKey(entry.getKey()).setValue(entry.getValue().floatValue());
 		}
 	}
 

@@ -21,7 +21,7 @@ import org.linqs.psl.application.groundrulestore.GroundRuleStore;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
-import org.linqs.psl.model.predicate.SpecialPredicate;
+import org.linqs.psl.model.predicate.GroundingOnlyPredicate;
 import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.model.rule.WeightedGroundRule;
 import org.linqs.psl.model.rule.arithmetic.AbstractGroundArithmeticRule;
@@ -56,11 +56,7 @@ public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 
 	@Override
 	public void updateWeights(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
-		for (GroundRule groundRule : ruleStore.getGroundRules()) {
-			if (groundRule instanceof WeightedGroundRule) {
-				termStore.updateWeight((WeightedGroundRule)groundRule);
-			}
-		}
+		// TODO(eriq): Since we don't keep internal representations of the weights, I don't think we need to do anything.
 	}
 
 	private SimpleTerm createTerm(GroundRule rule) {
@@ -78,7 +74,7 @@ public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 		boolean squared = !hard && (((WeightedGroundLogicalRule)rule).isSquared());
 		double weight = hard ? -1 : ((WeightedGroundLogicalRule)rule).getWeight();
 
-		SimpleTerm term = new SimpleTerm(hard, squared, weight, 1.0);
+		SimpleTerm term = new SimpleTerm(hard, squared, weight, 1.0, rule);
 
 		// Remember that logical rules store negated DNFs.
 
@@ -109,19 +105,19 @@ public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
 		boolean squared = !hard && (((WeightedGroundArithmeticRule)rule).isSquared());
 		double weight = hard ? -1 : ((WeightedGroundArithmeticRule)rule).getWeight();
 
-		SimpleTerm term = new SimpleTerm(hard, squared, weight, 0.0);
+		SimpleTerm term = new SimpleTerm(hard, squared, weight, 0.0, rule);
 
 		// We will have to switch around some signs depending on the comparison operator.
 		// Remember that we don't have a equality comparator.
 		boolean largerThan = FunctionComparator.LargerThan.equals(rule.getComparator());
 
-		double[] coefficients = rule.getCoefficients();
+		float[] coefficients = rule.getCoefficients();
 		GroundAtom[] atoms = rule.getOrderedAtoms();
 
 		// Add up all the atoms.
 		for (int i = 0; i < coefficients.length; i++) {
 			// Skip any special predicates.
-			if (atoms[i].getPredicate() instanceof SpecialPredicate) {
+			if (atoms[i].getPredicate() instanceof GroundingOnlyPredicate) {
 				continue;
 			}
 

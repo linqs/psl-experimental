@@ -20,6 +20,7 @@ package org.linqs.psl.experimental.reasoner.general;
 import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
+import org.linqs.psl.model.rule.GroundRule;
 import org.linqs.psl.reasoner.term.Term;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.List;
  * These terms are just simple summations and we want to minimize them.
  */
 public class SimpleTerm implements Term {
+	private final GroundRule groundRule;
 	private double constant;
 	private boolean hard;
 	private boolean squared;
@@ -39,7 +41,8 @@ public class SimpleTerm implements Term {
 	private List<RandomVariableAtom> atoms;
 	private List<Double> coefficients;
 
-	public SimpleTerm(boolean hard, boolean squared, double weight, double constant) {
+	public SimpleTerm(boolean hard, boolean squared, double weight, double constant, GroundRule groundRule) {
+		this.groundRule = groundRule;
 		this.hard = hard;
 		this.squared = squared;
 		this.weight = weight;
@@ -148,4 +151,13 @@ public class SimpleTerm implements Term {
 
 		return builder.toString();
 	}
+
+	@Override
+	public void weightChanged() {
+	}
+
+    @Override
+    public GroundRule getGroundRule() {
+        return groundRule;
+    }
 }
