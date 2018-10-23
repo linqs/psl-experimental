@@ -31,32 +31,32 @@ import org.linqs.psl.model.rule.Rule;
  */
 public class LogLoss implements Rule {
 
-	@Override
-	public void notifyAtomEvent(AtomEvent event) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void notifyAtomEvent(AtomEvent event) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void groundAll(AtomManager atomManager, GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void groundAll(AtomManager atomManager, GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void registerForAtomEvents(AtomEventFramework eventFramework,
-			GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void registerForAtomEvents(AtomEventFramework eventFramework,
+            GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void unregisterForAtomEvents(AtomEventFramework eventFramework,
-			GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void unregisterForAtomEvents(AtomEventFramework eventFramework,
+            GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public Rule clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Rule clone() throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

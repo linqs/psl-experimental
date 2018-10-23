@@ -30,14 +30,14 @@ import org.linqs.psl.model.rule.WeightedRule;
  *
  */
 public class LDAgroundLogLoss extends GroundLogLoss {
-	final double[] coefficientsArray;
-	public LDAgroundLogLoss(WeightedRule k, List<GroundAtom> literals, List<Double> coefficients, double[] coefficientsArray) {
-		super(k, literals, coefficients);
-		this.coefficientsArray = coefficientsArray;
-	}
+    final double[] coefficientsArray;
+    public LDAgroundLogLoss(WeightedRule k, List<GroundAtom> literals, List<Double> coefficients, double[] coefficientsArray) {
+        super(k, literals, coefficients);
+        this.coefficientsArray = coefficientsArray;
+    }
 
-	public double[] getCoefficientsArray() {
-		return coefficientsArray;
-	}
+    public double[] getCoefficientsArray() {
+        return coefficientsArray;
+    }
 
 }

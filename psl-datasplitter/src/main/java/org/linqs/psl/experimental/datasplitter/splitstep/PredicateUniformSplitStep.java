@@ -36,95 +36,95 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class PredicateUniformSplitStep implements SplitStep {
-	private static final int NO_GROUP = -1;
+    private static final int NO_GROUP = -1;
 
-	private StandardPredicate target;
-	private int numFolds;
-	private int groupBy;
+    private StandardPredicate target;
+    private int numFolds;
+    private int groupBy;
 
-	/**
-	 * Constructor for splitting by GroundTerms
-	 * @param target Predicate whose groundings to split
-	 * @param numFolds
-	 * @param groupBy index of node argument in groundings
-	 */
-	public PredicateUniformSplitStep(StandardPredicate target, int numFolds, int groupBy) {
-		this.target = target;
-		this.numFolds = numFolds;
-		this.groupBy = groupBy;
-	}
+    /**
+     * Constructor for splitting by GroundTerms
+     * @param target Predicate whose groundings to split
+     * @param numFolds
+     * @param groupBy index of node argument in groundings
+     */
+    public PredicateUniformSplitStep(StandardPredicate target, int numFolds, int groupBy) {
+        this.target = target;
+        this.numFolds = numFolds;
+        this.groupBy = groupBy;
+    }
 
-	/**
-	 * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each
-	 * atom as its own group
-	 * @param target Predicate whose groundings to split on
-	 * @param numFolds
-	 */
-	public PredicateUniformSplitStep(StandardPredicate target, int numFolds) {
-		this(target, numFolds, NO_GROUP);
-	}
+    /**
+     * Constructor for splitting by GroundAtoms. Does not group atoms, instead treats each
+     * atom as its own group
+     * @param target Predicate whose groundings to split on
+     * @param numFolds
+     */
+    public PredicateUniformSplitStep(StandardPredicate target, int numFolds) {
+        this(target, numFolds, NO_GROUP);
+    }
 
-	@Override
-	public List<Collection<Partition>> getSplits(Database inputDB, Random random) {
-		Map<Constant, Set<GroundAtom>> groupMap = new HashMap<Constant, Set<GroundAtom>>();
-		Collection<Set<GroundAtom>> groups;
-		List<Collection<Partition>> splits = new ArrayList<Collection<Partition>>();
+    @Override
+    public List<Collection<Partition>> getSplits(Database inputDB, Random random) {
+        Map<Constant, Set<GroundAtom>> groupMap = new HashMap<Constant, Set<GroundAtom>>();
+        Collection<Set<GroundAtom>> groups;
+        List<Collection<Partition>> splits = new ArrayList<Collection<Partition>>();
 
-		List<GroundAtom> allAtoms = inputDB.getAllGroundAtoms(target);
+        List<GroundAtom> allAtoms = inputDB.getAllGroundAtoms(target);
 
-		if (groupBy == NO_GROUP) {
-			groups = new ArrayList<Set<GroundAtom>>(allAtoms.size());
-			for (GroundAtom atom : allAtoms) {
-				Set<GroundAtom> group = new HashSet<GroundAtom>();
-				group.add(atom);
-				groups.add(group);
-			}
-		} else {
-			// group atoms
-			for (GroundAtom atom : allAtoms) {
-				Constant key = atom.getArguments()[groupBy];
-				if (groupMap.get(key) == null) {
-					groupMap.put(key, new TreeSet<GroundAtom>());
-				}
-				groupMap.get(key).add(atom);
-			}
-			groups = groupMap.values();
-		}
+        if (groupBy == NO_GROUP) {
+            groups = new ArrayList<Set<GroundAtom>>(allAtoms.size());
+            for (GroundAtom atom : allAtoms) {
+                Set<GroundAtom> group = new HashSet<GroundAtom>();
+                group.add(atom);
+                groups.add(group);
+            }
+        } else {
+            // group atoms
+            for (GroundAtom atom : allAtoms) {
+                Constant key = atom.getArguments()[groupBy];
+                if (groupMap.get(key) == null) {
+                    groupMap.put(key, new TreeSet<GroundAtom>());
+                }
+                groupMap.get(key).add(atom);
+            }
+            groups = groupMap.values();
+        }
 
-		List<Partition> allPartitions = new ArrayList<Partition>();
-		List<Inserter> inserters = new ArrayList<Inserter>();
-		for (int i = 0; i < numFolds; i++) {
-			Partition nextPartition = inputDB.getDataStore().getNewPartition();
-			allPartitions.add(nextPartition);
-			inserters.add(inputDB.getDataStore().getInserter(target, nextPartition));
-		}
+        List<Partition> allPartitions = new ArrayList<Partition>();
+        List<Inserter> inserters = new ArrayList<Inserter>();
+        for (int i = 0; i < numFolds; i++) {
+            Partition nextPartition = inputDB.getDataStore().getNewPartition();
+            allPartitions.add(nextPartition);
+            inserters.add(inputDB.getDataStore().getInserter(target, nextPartition));
+        }
 
-		insertIntoPartitions(groups, inserters, random);
+        insertIntoPartitions(groups, inserters, random);
 
-		for (int i = 0; i < numFolds; i++) {
-			Set<Partition> partitions = new TreeSet<Partition>();
-			for (int j = 0; j < numFolds; j++)
-				if (j != i)
-					partitions.add(allPartitions.get(j));
-			splits.add(partitions);
-		}
+        for (int i = 0; i < numFolds; i++) {
+            Set<Partition> partitions = new TreeSet<Partition>();
+            for (int j = 0; j < numFolds; j++)
+                if (j != i)
+                    partitions.add(allPartitions.get(j));
+            splits.add(partitions);
+        }
 
-		return splits;
-	}
+        return splits;
+    }
 
-	private void insertIntoPartitions(Collection<Set<GroundAtom>> groups,
-			List<Inserter> inserters, Random random) {
+    private void insertIntoPartitions(Collection<Set<GroundAtom>> groups,
+            List<Inserter> inserters, Random random) {
 
-		ArrayList<Set<GroundAtom>> groupList = new ArrayList<Set<GroundAtom>>(groups.size());
-		groupList.addAll(groups);
-		Collections.shuffle(groupList, random);
+        ArrayList<Set<GroundAtom>> groupList = new ArrayList<Set<GroundAtom>>(groups.size());
+        groupList.addAll(groups);
+        Collections.shuffle(groupList, random);
 
-		int j = 0;
-		for (Set<GroundAtom> group : groupList) {
-			for (GroundAtom atom : group)
-				inserters.get(j % numFolds).insertValue(atom.getValue(), (Object []) atom.getArguments());
-			j++;
-		}
-	}
+        int j = 0;
+        for (Set<GroundAtom> group : groupList) {
+            for (GroundAtom atom : group)
+                inserters.get(j % numFolds).insertValue(atom.getValue(), (Object []) atom.getArguments());
+            j++;
+        }
+    }
 
 }

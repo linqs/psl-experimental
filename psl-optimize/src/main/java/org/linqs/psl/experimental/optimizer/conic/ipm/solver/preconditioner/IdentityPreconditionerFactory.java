@@ -28,8 +28,8 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class IdentityPreconditionerFactory implements PreconditionerFactory {
-	@Override
-	public DoublePreconditioner getPreconditioner(ConicProgram program) {
-		return new DoubleIdentity();
-	}
+    @Override
+    public DoublePreconditioner getPreconditioner(ConicProgram program) {
+        return new DoubleIdentity();
+    }
 }

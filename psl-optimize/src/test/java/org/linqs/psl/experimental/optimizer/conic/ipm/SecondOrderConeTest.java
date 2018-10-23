@@ -28,29 +28,29 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 
 public class SecondOrderConeTest {
 
-	private ConicProgram program;
+    private ConicProgram program;
 
-	@Before
-	public void setUp() {
-		program = new ConicProgram();
-	}
+    @Before
+    public void setUp() {
+        program = new ConicProgram();
+    }
 
-	@Test
-	public void testGetMaxStep() {
-		SecondOrderCone coneA = program.createSecondOrderCone(2);
+    @Test
+    public void testGetMaxStep() {
+        SecondOrderCone coneA = program.createSecondOrderCone(2);
 
-		program.checkOutMatrices();
+        program.checkOutMatrices();
 
-		DoubleMatrix1D x = program.getX();
-		x.set(0, 0.0);
-		x.set(1, 1.0);
+        DoubleMatrix1D x = program.getX();
+        x.set(0, 0.0);
+        x.set(1, 1.0);
 
-		DoubleMatrix1D dx = x.copy();
-		dx.set(0, 0.0);
-		dx.set(1, -1.1);
+        DoubleMatrix1D dx = x.copy();
+        dx.set(0, 0.0);
+        dx.set(1, -1.1);
 
-		double maxStep = coneA.getMaxStep(program.getVarMap(), x, dx);
-		assertTrue(1 - 1.1 * maxStep > 0.0);
-	}
+        double maxStep = coneA.getMaxStep(program.getVarMap(), x, dx);
+        assertTrue(1 - 1.1 * maxStep > 0.0);
+    }
 
 }

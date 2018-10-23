@@ -39,71 +39,71 @@ import org.linqs.psl.reasoner.function.FunctionTerm;
  */
 public class GroundLogLoss implements WeightedGroundRule {
 
-	private Weight weight;
-	private WeightedRule kernel;
+    private Weight weight;
+    private WeightedRule kernel;
 
-	protected final List<GroundAtom> literals;
-	protected final List<Double> coefficients;
+    protected final List<GroundAtom> literals;
+    protected final List<Double> coefficients;
 
-	public GroundLogLoss(WeightedRule k, List<GroundAtom> literals, List<Double> coefficients) {
-		kernel = k;
-		this.literals = new ArrayList<GroundAtom>(literals);
-		this.coefficients = new ArrayList<Double>(coefficients);
-	}
+    public GroundLogLoss(WeightedRule k, List<GroundAtom> literals, List<Double> coefficients) {
+        kernel = k;
+        this.literals = new ArrayList<GroundAtom>(literals);
+        this.coefficients = new ArrayList<Double>(coefficients);
+    }
 
-	@Override
-	public WeightedRule getRule() {
-		return (WeightedRule) kernel;
-	}
+    @Override
+    public WeightedRule getRule() {
+        return (WeightedRule) kernel;
+    }
 
-	@Override
-	public Weight getWeight() {
-		if (weight == null)
-			return getRule().getWeight();
-		return weight;
-	}
+    @Override
+    public Weight getWeight() {
+        if (weight == null)
+            return getRule().getWeight();
+        return weight;
+    }
 
-	@Override
-	public void setWeight(Weight w) {
-		weight = w;
-	}
+    @Override
+    public void setWeight(Weight w) {
+        weight = w;
+    }
 
-	@Override
-	public FunctionTerm getFunctionDefinition() {
-		NegativeLogFunction returner = new NegativeLogFunction();
-		Iterator<Double> cIter = coefficients.iterator();
-		GroundAtom currentAtom;
-		Double currentCoefficient;
-		for (Iterator<GroundAtom> agIter = literals.iterator(); agIter.hasNext();) {
-			currentAtom = agIter.next();
-			currentCoefficient = cIter.next();
-			returner.add(new FunctionSummand(currentCoefficient, currentAtom.getVariable()));
-		}
-		return returner;
-	}
+    @Override
+    public FunctionTerm getFunctionDefinition() {
+        NegativeLogFunction returner = new NegativeLogFunction();
+        Iterator<Double> cIter = coefficients.iterator();
+        GroundAtom currentAtom;
+        Double currentCoefficient;
+        for (Iterator<GroundAtom> agIter = literals.iterator(); agIter.hasNext();) {
+            currentAtom = agIter.next();
+            currentCoefficient = cIter.next();
+            returner.add(new FunctionSummand(currentCoefficient, currentAtom.getVariable()));
+        }
+        return returner;
+    }
 
-	@Override
-	public double getIncompatibility() {
-		double returner = 0;
-		for (int i = 0; i < literals.size(); i++) {
-			GroundAtom g = literals.get(i);
-			double c = coefficients.get(i);
-			returner = returner - c * Math.log(g.getValue());
-		}
-		return returner;
-	}
+    @Override
+    public double getIncompatibility() {
+        double returner = 0;
+        for (int i = 0; i < literals.size(); i++) {
+            GroundAtom g = literals.get(i);
+            double c = coefficients.get(i);
+            returner = returner - c * Math.log(g.getValue());
+        }
+        return returner;
+    }
 
-	@Override
-	public String toString() {
-		return "{" + getWeight().toString() + "} " + "Logloss" + super.toString();
-	}
+    @Override
+    public String toString() {
+        return "{" + getWeight().toString() + "} " + "Logloss" + super.toString();
+    }
 
-	@Override
-	public Set<GroundAtom> getAtoms() {
-		HashSet<GroundAtom> atoms = new HashSet<GroundAtom>();
-		for (GroundAtom atom : literals)
-			atoms.add(atom);
-		return atoms;
-	}
+    @Override
+    public Set<GroundAtom> getAtoms() {
+        HashSet<GroundAtom> atoms = new HashSet<GroundAtom>();
+        for (GroundAtom atom : literals)
+            atoms.add(atom);
+        return atoms;
+    }
 
 }

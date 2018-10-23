@@ -28,15 +28,15 @@ import java.io.IOException;
  * A TermStore that can write out its terms to a file.
  */
 public interface SerialTermStore<E extends Term> extends TermStore<E> {
-	/**
-	 * Write out the optimiztion problem
-	 * (variables, objective, and constraints) to a file.
-	 */
-	public void serialize(BufferedWriter writer) throws IOException;
+    /**
+     * Write out the optimiztion problem
+     * (variables, objective, and constraints) to a file.
+     */
+    public void serialize(BufferedWriter writer) throws IOException;
 
-	/**
-	 * Read a file describing the solution and
-	 * update all the variables (ground atoms).
-	 */
-	public void deserialize(BufferedReader reader) throws IOException;
+    /**
+     * Read a file describing the solution and
+     * update all the variables (ground atoms).
+     */
+    public void deserialize(BufferedReader reader) throws IOException;
 }

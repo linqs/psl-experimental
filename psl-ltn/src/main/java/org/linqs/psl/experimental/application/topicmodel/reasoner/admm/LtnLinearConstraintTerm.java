@@ -29,17 +29,17 @@ import org.linqs.psl.reasoner.function.FunctionComparator;
  */
 public class LtnLinearConstraintTerm extends LinearConstraintTerm {
 
-	protected LtnLinearConstraintTerm(ADMMReasoner reasoner, int[] zIndices,
-			double[] coeffs, double constant, FunctionComparator comparator) {
-		super(reasoner, zIndices, coeffs, constant, comparator);
-	}
+    protected LtnLinearConstraintTerm(ADMMReasoner reasoner, int[] zIndices,
+            double[] coeffs, double constant, FunctionComparator comparator) {
+        super(reasoner, zIndices, coeffs, constant, comparator);
+    }
 
-	/* A sensible initialization for a constraint on a Dirichlet simplex variable
-	 * for latent topic networks is to set the dual variables to minus the sum of the Dirichlet counts.
-	 */
-	protected void initDualVariablesAsDirichlet(double dirichletCoefficientSum) {
-		for (int i = 0; i < y.length; i++) {
-			y[i] = -dirichletCoefficientSum;
-		}
-	}
+    /* A sensible initialization for a constraint on a Dirichlet simplex variable
+     * for latent topic networks is to set the dual variables to minus the sum of the Dirichlet counts.
+     */
+    protected void initDualVariablesAsDirichlet(double dirichletCoefficientSum) {
+        for (int i = 0; i < y.length; i++) {
+            y[i] = -dirichletCoefficientSum;
+        }
+    }
 }

@@ -16,76 +16,75 @@
   - See the License for the specific language governing permissions and
   - limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.linqs</groupId>
-	<artifactId>psl-datasplitter</artifactId>
-	<name>psl-datasplitter</name>
-	<packaging>jar</packaging>
-	<description>Experimental data splitting extensions of the PSL software from the LINQS research group.</description>
-	<parent>
-		<groupId>org.linqs</groupId>
-		<artifactId>psl-experimental</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
-	</parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.linqs</groupId>
+    <artifactId>psl-datasplitter</artifactId>
+    <name>psl-datasplitter</name>
+    <packaging>jar</packaging>
+    <description>Experimental data splitting extensions of the PSL software from the LINQS research group.</description>
+    <parent>
+        <groupId>org.linqs</groupId>
+        <artifactId>psl-experimental</artifactId>
+        <version>2.2.0-SNAPSHOT</version>
+    </parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.linqs</groupId>
-			<artifactId>psl-core</artifactId>
-			<version>${psl-core-version}</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.linqs</groupId>
+            <artifactId>psl-core</artifactId>
+            <version>${psl-core-version}</version>
+        </dependency>
 
-		<!-- linear algebra dependencies -->
-		<dependency>
-			<groupId>org.ujmp</groupId>
-			<artifactId>ujmp-complete</artifactId>
-			<version>0.2.4</version>
-		</dependency>
+        <!-- linear algebra dependencies -->
+        <dependency>
+            <groupId>org.ujmp</groupId>
+            <artifactId>ujmp-complete</artifactId>
+            <version>0.2.4</version>
+        </dependency>
 
-		<!-- logging dependencies -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.21</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.21</version>
-		</dependency>
+        <!-- logging dependencies -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.21</version>
+        </dependency>
 
-		<!-- guava dependencies -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>20.0</version>
-		</dependency>
+        <!-- guava dependencies -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>20.0</version>
+        </dependency>
 
-		<!-- commons dependencies -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.1</version>
-		</dependency>
+        <!-- commons dependencies -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.1</version>
+        </dependency>
 
-		<!-- miscellaneous dependencies -->
-		<dependency>
-			<groupId>net.sourceforge.collections</groupId>
-			<artifactId>collections-generic</artifactId>
-			<version>4.01</version>
-		</dependency>
-	</dependencies>
+        <!-- miscellaneous dependencies -->
+        <dependency>
+            <groupId>net.sourceforge.collections</groupId>
+            <artifactId>collections-generic</artifactId>
+            <version>4.01</version>
+        </dependency>
+    </dependencies>
 </project>
 

@@ -35,43 +35,43 @@ import cern.colt.matrix.tdouble.algo.decomposition.SparseDoubleQRDecomposition;
  */
 public class Presolver {
 
-	/**
-	 * Deletes any redundant constraints from a {@link ConicProgram}.
-	 *
-	 * @param program  the program to be modified
-	 */
-	public static void removeRedundantConstraints(ConicProgram program) {
-		final double tolerance = 10e-10;
+    /**
+     * Deletes any redundant constraints from a {@link ConicProgram}.
+     *
+     * @param program  the program to be modified
+     */
+    public static void removeRedundantConstraints(ConicProgram program) {
+        final double tolerance = 10e-10;
 
-		program.checkOutMatrices();
+        program.checkOutMatrices();
 
-		Map<Integer, LinearConstraint> rowMap = invertLCMap(program.getLcMap());
-		List<LinearConstraint> toRemove = new LinkedList<LinearConstraint>();
+        Map<Integer, LinearConstraint> rowMap = invertLCMap(program.getLcMap());
+        List<LinearConstraint> toRemove = new LinkedList<LinearConstraint>();
 
-		SparseDoubleQRDecomposition qr = new SparseDoubleQRDecomposition(program.getA(), 1);
-		int[] q = qr.getSymbolicAnalysis().q; /* Column permutations (since A is transposed) */
-		DoubleMatrix2D R = qr.getR();
+        SparseDoubleQRDecomposition qr = new SparseDoubleQRDecomposition(program.getA(), 1);
+        int[] q = qr.getSymbolicAnalysis().q; /* Column permutations (since A is transposed) */
+        DoubleMatrix2D R = qr.getR();
 
-		for (int i = 0; i < program.getNumLinearConstraints(); i++) {
-			if (Math.abs(R.get(i, i)) < tolerance)
-				toRemove.add(rowMap.get(q[i]));
-		}
+        for (int i = 0; i < program.getNumLinearConstraints(); i++) {
+            if (Math.abs(R.get(i, i)) < tolerance)
+                toRemove.add(rowMap.get(q[i]));
+        }
 
-		program.checkInMatrices();
+        program.checkInMatrices();
 
-		for (LinearConstraint lc : toRemove)
-			lc.delete();
-	}
+        for (LinearConstraint lc : toRemove)
+            lc.delete();
+    }
 
-	private static Map<Integer, LinearConstraint> invertLCMap(Map<LinearConstraint, Integer> map) {
-		Map<Integer, LinearConstraint> invertedMap = new HashMap<Integer, LinearConstraint>(map.size());
+    private static Map<Integer, LinearConstraint> invertLCMap(Map<LinearConstraint, Integer> map) {
+        Map<Integer, LinearConstraint> invertedMap = new HashMap<Integer, LinearConstraint>(map.size());
 
-		for (Map.Entry<LinearConstraint, Integer> e : map.entrySet())
-			invertedMap.put(e.getValue(), e.getKey());
+        for (Map.Entry<LinearConstraint, Integer> e : map.entrySet())
+            invertedMap.put(e.getValue(), e.getKey());
 
-		if (map.size() != invertedMap.size())
-			throw new IllegalArgumentException("Map is not one-to-one.");
+        if (map.size() != invertedMap.size())
+            throw new IllegalArgumentException("Map is not one-to-one.");
 
-		return invertedMap;
-	}
+        return invertedMap;
+    }
 }

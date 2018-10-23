@@ -30,53 +30,53 @@ import org.linqs.psl.reasoner.function.FunctionVariable;
  */
 public class NegativeLogFunction extends FunctionSum {
 
-	public NegativeLogFunction() {
-		super();
-	}
+    public NegativeLogFunction() {
+        super();
+    }
 
 
-	/**
-	 * Returns the sum of the logs of the values of the atoms
-	 *
-	 * @return  the NegativeLogFunction's value
-	 */
-	@Override
-	public double getValue() {
-		double val = 0.0;
-		for (FunctionSummand s : sum) val-= s.getCoefficient() * Math.log(s.getTerm().getValue());
-		return val;
-	}
+    /**
+     * Returns the sum of the logs of the values of the atoms
+     *
+     * @return  the NegativeLogFunction's value
+     */
+    @Override
+    public double getValue() {
+        double val = 0.0;
+        for (FunctionSummand s : sum) val-= s.getCoefficient() * Math.log(s.getTerm().getValue());
+        return val;
+    }
 
-	@Override
-	public double getValue(Map<? extends FunctionVariable,Double> values, boolean useCurrentValues) {
-		//TODO I'm not at all sure that this is what should be done here.
-		double val = 0.0;
-		for (FunctionSummand s : sum) val-= s.getCoefficient() * Math.log(s.getTerm().getValue(values, useCurrentValues));
-		return val;
-	}
-
-
-
-	@Override
-	public boolean isLinear() {
-		return false;
-	}
+    @Override
+    public double getValue(Map<? extends FunctionVariable,Double> values, boolean useCurrentValues) {
+        //TODO I'm not at all sure that this is what should be done here.
+        double val = 0.0;
+        for (FunctionSummand s : sum) val-= s.getCoefficient() * Math.log(s.getTerm().getValue(values, useCurrentValues));
+        return val;
+    }
 
 
-	@Override
-	public String toString() {
-		StringBuilder string = new StringBuilder();
-		string.append("(");
-		boolean skip = true;
-		for (FunctionTerm term : sum) {
-			if (skip)
-				skip = false;
-			else
-				string.append("-");
-			string.append("log( " + term.toString() + ") ");
-		}
-		string.append(")");
-		return string.toString();
-	}
+
+    @Override
+    public boolean isLinear() {
+        return false;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder string = new StringBuilder();
+        string.append("(");
+        boolean skip = true;
+        for (FunctionTerm term : sum) {
+            if (skip)
+                skip = false;
+            else
+                string.append("-");
+            string.append("log( " + term.toString() + ") ");
+        }
+        string.append(")");
+        return string.toString();
+    }
 
 }

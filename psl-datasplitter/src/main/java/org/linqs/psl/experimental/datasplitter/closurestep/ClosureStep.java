@@ -33,6 +33,6 @@ import org.linqs.psl.database.Partition;
  */
 public interface ClosureStep {
 
-	void doClosure(Database inputDB, List<Collection<Partition>> partitionList);
+    void doClosure(Database inputDB, List<Collection<Partition>> partitionList);
 
 }

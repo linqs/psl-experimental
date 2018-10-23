@@ -28,9 +28,9 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public interface NormalSystemSolver {
-	public void setConicProgram(ConicProgram program);
+    public void setConicProgram(ConicProgram program);
 
-	public void setA(SparseCCDoubleMatrix2D A);
+    public void setA(SparseCCDoubleMatrix2D A);
 
-	public void solve(DoubleMatrix1D b);
+    public void solve(DoubleMatrix1D b);
 }

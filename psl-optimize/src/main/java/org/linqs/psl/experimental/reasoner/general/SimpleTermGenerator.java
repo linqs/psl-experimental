@@ -39,96 +39,96 @@ import org.linqs.psl.reasoner.term.TermStore;
  * These terms are usually later serialized and sent off to some external optimizer.
  */
 public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
-	@Override
-	public int generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
-		int count = 0;
+    @Override
+    public int generateTerms(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+        int count = 0;
 
-		for (GroundRule groundRule : ruleStore.getGroundRules()) {
-			SimpleTerm term = createTerm(groundRule);
-			if (term.size() > 0) {
-				termStore.add(groundRule, term);
-				count++;
-			}
-		}
+        for (GroundRule groundRule : ruleStore.getGroundRules()) {
+            SimpleTerm term = createTerm(groundRule);
+            if (term.size() > 0) {
+                termStore.add(groundRule, term);
+                count++;
+            }
+        }
 
-		return count;
-	}
+        return count;
+    }
 
-	@Override
-	public void updateWeights(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
-		// TODO(eriq): Since we don't keep internal representations of the weights, I don't think we need to do anything.
-	}
+    @Override
+    public void updateWeights(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
+        // TODO(eriq): Since we don't keep internal representations of the weights, I don't think we need to do anything.
+    }
 
-	private SimpleTerm createTerm(GroundRule rule) {
-		if (rule instanceof AbstractGroundLogicalRule) {
-			return createLogicalTerm((AbstractGroundLogicalRule)rule);
-		} else if (rule instanceof AbstractGroundArithmeticRule) {
-			return createArithmeticTerm((AbstractGroundArithmeticRule)rule);
-		}
+    private SimpleTerm createTerm(GroundRule rule) {
+        if (rule instanceof AbstractGroundLogicalRule) {
+            return createLogicalTerm((AbstractGroundLogicalRule)rule);
+        } else if (rule instanceof AbstractGroundArithmeticRule) {
+            return createArithmeticTerm((AbstractGroundArithmeticRule)rule);
+        }
 
-		throw new RuntimeException("Unknown rule type: " + rule.getClass().getName());
-	}
+        throw new RuntimeException("Unknown rule type: " + rule.getClass().getName());
+    }
 
-	private SimpleTerm createLogicalTerm(AbstractGroundLogicalRule rule) {
-		boolean hard = (rule instanceof UnweightedGroundLogicalRule);
-		boolean squared = !hard && (((WeightedGroundLogicalRule)rule).isSquared());
-		double weight = hard ? -1 : ((WeightedGroundLogicalRule)rule).getWeight();
+    private SimpleTerm createLogicalTerm(AbstractGroundLogicalRule rule) {
+        boolean hard = (rule instanceof UnweightedGroundLogicalRule);
+        boolean squared = !hard && (((WeightedGroundLogicalRule)rule).isSquared());
+        double weight = hard ? -1 : ((WeightedGroundLogicalRule)rule).getWeight();
 
-		SimpleTerm term = new SimpleTerm(hard, squared, weight, 1.0, rule);
+        SimpleTerm term = new SimpleTerm(hard, squared, weight, 1.0, rule);
 
-		// Remember that logical rules store negated DNFs.
+        // Remember that logical rules store negated DNFs.
 
-		for (GroundAtom atom : rule.getPositiveAtoms()) {
-			if (atom instanceof ObservedAtom) {
-				term.addConstant((ObservedAtom)atom, true);
-			} else if (atom instanceof RandomVariableAtom) {
-				term.addAtom((RandomVariableAtom)atom, true);
-			}
-		}
+        for (GroundAtom atom : rule.getPositiveAtoms()) {
+            if (atom instanceof ObservedAtom) {
+                term.addConstant((ObservedAtom)atom, true);
+            } else if (atom instanceof RandomVariableAtom) {
+                term.addAtom((RandomVariableAtom)atom, true);
+            }
+        }
 
-		for (GroundAtom atom : rule.getNegativeAtoms()) {
-			if (atom instanceof ObservedAtom) {
-				term.addConstant((ObservedAtom)atom, false);
-			} else if (atom instanceof RandomVariableAtom) {
-				term.addAtom((RandomVariableAtom)atom, false);
-			}
-		}
+        for (GroundAtom atom : rule.getNegativeAtoms()) {
+            if (atom instanceof ObservedAtom) {
+                term.addConstant((ObservedAtom)atom, false);
+            } else if (atom instanceof RandomVariableAtom) {
+                term.addAtom((RandomVariableAtom)atom, false);
+            }
+        }
 
-		// Add the final offset for positive terms.
-		term.addConstant(-1.0 * rule.getPositiveAtoms().size());
+        // Add the final offset for positive terms.
+        term.addConstant(-1.0 * rule.getPositiveAtoms().size());
 
-		return term;
-	}
+        return term;
+    }
 
-	private SimpleTerm createArithmeticTerm(AbstractGroundArithmeticRule rule) {
-		boolean hard = (rule instanceof UnweightedGroundArithmeticRule);
-		boolean squared = !hard && (((WeightedGroundArithmeticRule)rule).isSquared());
-		double weight = hard ? -1 : ((WeightedGroundArithmeticRule)rule).getWeight();
+    private SimpleTerm createArithmeticTerm(AbstractGroundArithmeticRule rule) {
+        boolean hard = (rule instanceof UnweightedGroundArithmeticRule);
+        boolean squared = !hard && (((WeightedGroundArithmeticRule)rule).isSquared());
+        double weight = hard ? -1 : ((WeightedGroundArithmeticRule)rule).getWeight();
 
-		SimpleTerm term = new SimpleTerm(hard, squared, weight, 0.0, rule);
+        SimpleTerm term = new SimpleTerm(hard, squared, weight, 0.0, rule);
 
-		// We will have to switch around some signs depending on the comparison operator.
-		// Remember that we don't have a equality comparator.
-		boolean largerThan = FunctionComparator.LargerThan.equals(rule.getComparator());
+        // We will have to switch around some signs depending on the comparison operator.
+        // Remember that we don't have a equality comparator.
+        boolean largerThan = FunctionComparator.LargerThan.equals(rule.getComparator());
 
-		float[] coefficients = rule.getCoefficients();
-		GroundAtom[] atoms = rule.getOrderedAtoms();
+        float[] coefficients = rule.getCoefficients();
+        GroundAtom[] atoms = rule.getOrderedAtoms();
 
-		// Add up all the atoms.
-		for (int i = 0; i < coefficients.length; i++) {
-			// Skip any special predicates.
-			if (atoms[i].getPredicate() instanceof GroundingOnlyPredicate) {
-				continue;
-			}
+        // Add up all the atoms.
+        for (int i = 0; i < coefficients.length; i++) {
+            // Skip any special predicates.
+            if (atoms[i].getPredicate() instanceof GroundingOnlyPredicate) {
+                continue;
+            }
 
-			double modifier = largerThan ? -1.0 : 1.0;
-			term.add(atoms[i], modifier * coefficients[i]);
-		}
+            double modifier = largerThan ? -1.0 : 1.0;
+            term.add(atoms[i], modifier * coefficients[i]);
+        }
 
-		// Add in the constant (sign swap since it starts on the RHS).
-		double modifier = largerThan ? 1.0 : -1.0;
-		term.addConstant(modifier * rule.getConstant());
+        // Add in the constant (sign swap since it starts on the RHS).
+        double modifier = largerThan ? 1.0 : -1.0;
+        term.addConstant(modifier * rule.getConstant());
 
-		return term;
-	}
+        return term;
+    }
 }

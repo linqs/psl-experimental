@@ -25,89 +25,89 @@ import java.util.Set;
 
 public class LinearConstraint extends Entity {
 
-	private Map<Variable, Double> vars;
+    private Map<Variable, Double> vars;
 
-	private double constrainedValue;
-	private double lagrange;
+    private double constrainedValue;
+    private double lagrange;
 
-	protected static final String UNOWNED_VAR = "Variable does not belong to this conic program.";
+    protected static final String UNOWNED_VAR = "Variable does not belong to this conic program.";
 
-	LinearConstraint(ConicProgram p) {
-		super(p);
-		vars = new HashMap<Variable, Double>(8);
-		doSetConstrainedValue(0.0);
-		setLagrange(0.0);
-		program.notify(ConicProgramEvent.ConCreated, this);
-	}
+    LinearConstraint(ConicProgram p) {
+        super(p);
+        vars = new HashMap<Variable, Double>(8);
+        doSetConstrainedValue(0.0);
+        setLagrange(0.0);
+        program.notify(ConicProgramEvent.ConCreated, this);
+    }
 
-	public void setVariable(Variable v, Double coefficient) {
-		program.verifyCheckedIn();
-		Double currentCoefficient = vars.get(v);
-		if (currentCoefficient != null) {
-			if (coefficient == 0.0) {
-				vars.remove(v);
-				v.notifyRemovedFromLinearConstraint(this);
-				program.notify(ConicProgramEvent.VarRemovedFromCon, this, v);
-			}
-			else if (coefficient != currentCoefficient) {
-				vars.put(v, coefficient);
-				program.notify(ConicProgramEvent.ConCoeffChanged, this, new Object[] {v, currentCoefficient});
-			}
-		}
-		else if (coefficient != 0.0) {
-			vars.put(v, coefficient);
-			v.notifyAddedToLinearConstraint(this);
-			program.notify(ConicProgramEvent.VarAddedToCon, this, v);
-		}
-	}
+    public void setVariable(Variable v, Double coefficient) {
+        program.verifyCheckedIn();
+        Double currentCoefficient = vars.get(v);
+        if (currentCoefficient != null) {
+            if (coefficient == 0.0) {
+                vars.remove(v);
+                v.notifyRemovedFromLinearConstraint(this);
+                program.notify(ConicProgramEvent.VarRemovedFromCon, this, v);
+            }
+            else if (coefficient != currentCoefficient) {
+                vars.put(v, coefficient);
+                program.notify(ConicProgramEvent.ConCoeffChanged, this, new Object[] {v, currentCoefficient});
+            }
+        }
+        else if (coefficient != 0.0) {
+            vars.put(v, coefficient);
+            v.notifyAddedToLinearConstraint(this);
+            program.notify(ConicProgramEvent.VarAddedToCon, this, v);
+        }
+    }
 
-	public Map<Variable, Double> getVariables() {
-		return Collections.unmodifiableMap(vars);
-	}
+    public Map<Variable, Double> getVariables() {
+        return Collections.unmodifiableMap(vars);
+    }
 
-	public Double getConstrainedValue() {
-		return constrainedValue;
-	}
+    public Double getConstrainedValue() {
+        return constrainedValue;
+    }
 
-	public void setConstrainedValue(Double v) {
-		program.verifyCheckedIn();
-		doSetConstrainedValue(v);
-		program.notify(ConicProgramEvent.ConValueChanged, this);
-	}
+    public void setConstrainedValue(Double v) {
+        program.verifyCheckedIn();
+        doSetConstrainedValue(v);
+        program.notify(ConicProgramEvent.ConValueChanged, this);
+    }
 
-	private void doSetConstrainedValue(Double v) {
-		constrainedValue = v;
-	}
+    private void doSetConstrainedValue(Double v) {
+        constrainedValue = v;
+    }
 
-	public Double getLagrange() {
-		return lagrange;
-	}
+    public Double getLagrange() {
+        return lagrange;
+    }
 
-	void setLagrange(Double l) {
-		lagrange = l;
-	}
+    void setLagrange(Double l) {
+        lagrange = l;
+    }
 
-	boolean isPrimalFeasible() {
-		return Math.abs(distanceFromPrimalFeasibility()) < 10e-8;
-	}
+    boolean isPrimalFeasible() {
+        return Math.abs(distanceFromPrimalFeasibility()) < 10e-8;
+    }
 
-	double distanceFromPrimalFeasibility() {
-		double dist = 0.0;
-		for (Map.Entry<Variable, Double> e : getVariables().entrySet()) {
-			dist += e.getValue() * e.getKey().getValue();
-		}
-		dist -= getConstrainedValue();
-		return dist;
-	}
+    double distanceFromPrimalFeasibility() {
+        double dist = 0.0;
+        for (Map.Entry<Variable, Double> e : getVariables().entrySet()) {
+            dist += e.getValue() * e.getKey().getValue();
+        }
+        dist -= getConstrainedValue();
+        return dist;
+    }
 
-	@Override
-	final public void delete() {
-		program.verifyCheckedIn();
-		Set<Variable> originalVars = new HashSet<Variable>(getVariables().keySet());
-		for (Variable var : originalVars) {
-			setVariable(var, 0.0);
-		}
-		program.notify(ConicProgramEvent.ConDeleted, this, Collections.unmodifiableSet(originalVars));
-		vars = null;
-	}
+    @Override
+    final public void delete() {
+        program.verifyCheckedIn();
+        Set<Variable> originalVars = new HashSet<Variable>(getVariables().keySet());
+        for (Variable var : originalVars) {
+            setVariable(var, 0.0);
+        }
+        program.notify(ConicProgramEvent.ConDeleted, this, Collections.unmodifiableSet(originalVars));
+        vars = null;
+    }
 }

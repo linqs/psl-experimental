@@ -23,9 +23,9 @@ import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 
 public interface ConicProgramSolver {
-	public void setConicProgram(ConicProgram p);
+    public void setConicProgram(ConicProgram p);
 
-	public void solve();
+    public void solve();
 
-	public boolean supportsConeTypes(Collection<ConeType> types);
+    public boolean supportsConeTypes(Collection<ConeType> types);
 }

@@ -31,6 +31,6 @@ import org.linqs.psl.database.Partition;
  */
 public interface SplitStep {
 
-	List<Collection<Partition>> getSplits(Database inputDB, Random random);
+    List<Collection<Partition>> getSplits(Database inputDB, Random random);
 
 }

@@ -26,11 +26,11 @@ import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolverContractTest
 
 public class IPMTest extends ConicProgramSolverContractTest {
 
-	@Override
-	protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations() {
-		Vector<IPM> solvers = new Vector<IPM>(1);
-		solvers.add(new IPM());
-		return solvers;
-	}
+    @Override
+    protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations() {
+        Vector<IPM> solvers = new Vector<IPM>(1);
+        solvers.add(new IPM());
+        return solvers;
+    }
 
 }

@@ -37,74 +37,74 @@ import org.linqs.psl.experimental.optimizer.conic.program.NonNegativeOrthantCone
  */
 public class ConicProgramPartitionTest {
 
-	private ConicProgramPartition partition;
-	private ConicProgram program;
+    private ConicProgramPartition partition;
+    private ConicProgram program;
 
-	private LinearConstraint l1;
-	private LinearConstraint l2;
-	private LinearConstraint l3;
+    private LinearConstraint l1;
+    private LinearConstraint l2;
+    private LinearConstraint l3;
 
-	@Before
-	public final void setUp() throws Exception {
-		program = new ConicProgram();
+    @Before
+    public final void setUp() throws Exception {
+        program = new ConicProgram();
 
-		NonNegativeOrthantCone c1 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c2 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c3 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c4 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c5 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c6 = program.createNonNegativeOrthantCone();
-		NonNegativeOrthantCone c7 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c1 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c2 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c3 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c4 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c5 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c6 = program.createNonNegativeOrthantCone();
+        NonNegativeOrthantCone c7 = program.createNonNegativeOrthantCone();
 
-		l1 = program.createConstraint();
-		l1.setVariable(c1.getVariable(), 1.0);
-		l1.setVariable(c2.getVariable(), 1.0);
-		l1.setVariable(c3.getVariable(), 1.0);
-		l1.setConstrainedValue(1.0);
+        l1 = program.createConstraint();
+        l1.setVariable(c1.getVariable(), 1.0);
+        l1.setVariable(c2.getVariable(), 1.0);
+        l1.setVariable(c3.getVariable(), 1.0);
+        l1.setConstrainedValue(1.0);
 
-		l2 = program.createConstraint();
-		l2.setVariable(c3.getVariable(), 1.0);
-		l2.setVariable(c4.getVariable(), 1.0);
-		l2.setVariable(c5.getVariable(), 1.0);
-		l2.setConstrainedValue(1.0);
+        l2 = program.createConstraint();
+        l2.setVariable(c3.getVariable(), 1.0);
+        l2.setVariable(c4.getVariable(), 1.0);
+        l2.setVariable(c5.getVariable(), 1.0);
+        l2.setConstrainedValue(1.0);
 
-		l3 = program.createConstraint();
-		l3.setVariable(c5.getVariable(), 1.0);
-		l3.setVariable(c6.getVariable(), 1.0);
-		l3.setVariable(c7.getVariable(), 1.0);
+        l3 = program.createConstraint();
+        l3.setVariable(c5.getVariable(), 1.0);
+        l3.setVariable(c6.getVariable(), 1.0);
+        l3.setVariable(c7.getVariable(), 1.0);
 
-		Collection<Set<Cone>> coneSets = new LinkedList<Set<Cone>>();
+        Collection<Set<Cone>> coneSets = new LinkedList<Set<Cone>>();
 
-		HashSet<Cone> coneSet = new HashSet<Cone>();
-		coneSet.add(c1);
-		coneSet.add(c2);
-		coneSet.add(c3);
-		coneSet.add(c4);
+        HashSet<Cone> coneSet = new HashSet<Cone>();
+        coneSet.add(c1);
+        coneSet.add(c2);
+        coneSet.add(c3);
+        coneSet.add(c4);
 
-		coneSets.add(coneSet);
+        coneSets.add(coneSet);
 
-		coneSet = new HashSet<Cone>();
-		coneSet.add(c5);
-		coneSet.add(c6);
-		coneSet.add(c7);
+        coneSet = new HashSet<Cone>();
+        coneSet.add(c5);
+        coneSet.add(c6);
+        coneSet.add(c7);
 
-		coneSets.add(coneSet);
+        coneSets.add(coneSet);
 
-		partition = new ConicProgramPartition(program, coneSets);
-	}
+        partition = new ConicProgramPartition(program, coneSets);
+    }
 
-	@Test
-	public void testCheckOutMatrices() {
-		program.checkOutMatrices();
-		partition.checkOutMatrices();
-	}
+    @Test
+    public void testCheckOutMatrices() {
+        program.checkOutMatrices();
+        partition.checkOutMatrices();
+    }
 
-	@Test
-	public void testGetCutConstraints() {
-		Set<LinearConstraint> cutConstraints = partition.getCutConstraints();
+    @Test
+    public void testGetCutConstraints() {
+        Set<LinearConstraint> cutConstraints = partition.getCutConstraints();
 
-		assertTrue(cutConstraints.size() == 1);
-		assertTrue(cutConstraints.contains(l2));
-	}
+        assertTrue(cutConstraints.size() == 1);
+        assertTrue(cutConstraints.contains(l2));
+    }
 }
 

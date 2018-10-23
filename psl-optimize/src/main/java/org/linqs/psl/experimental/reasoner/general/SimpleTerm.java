@@ -32,129 +32,129 @@ import java.util.List;
  * These terms are just simple summations and we want to minimize them.
  */
 public class SimpleTerm implements Term {
-	private final GroundRule groundRule;
-	private double constant;
-	private boolean hard;
-	private boolean squared;
-	private double weight;
+    private final GroundRule groundRule;
+    private double constant;
+    private boolean hard;
+    private boolean squared;
+    private double weight;
 
-	private List<RandomVariableAtom> atoms;
-	private List<Double> coefficients;
+    private List<RandomVariableAtom> atoms;
+    private List<Double> coefficients;
 
-	public SimpleTerm(boolean hard, boolean squared, double weight, double constant, GroundRule groundRule) {
-		this.groundRule = groundRule;
-		this.hard = hard;
-		this.squared = squared;
-		this.weight = weight;
-		this.constant = constant;
+    public SimpleTerm(boolean hard, boolean squared, double weight, double constant, GroundRule groundRule) {
+        this.groundRule = groundRule;
+        this.hard = hard;
+        this.squared = squared;
+        this.weight = weight;
+        this.constant = constant;
 
-		atoms = new ArrayList<RandomVariableAtom>();
-		coefficients = new ArrayList<Double>();
-	}
+        atoms = new ArrayList<RandomVariableAtom>();
+        coefficients = new ArrayList<Double>();
+    }
 
-	public void addConstant(double value) {
-		constant += value;
-	}
+    public void addConstant(double value) {
+        constant += value;
+    }
 
-	public void addConstant(ObservedAtom atom, boolean isPositive) {
-		if (isPositive) {
-			constant += atom.getValue();
-		} else {
-			constant -= atom.getValue();
-		}
-	}
+    public void addConstant(ObservedAtom atom, boolean isPositive) {
+        if (isPositive) {
+            constant += atom.getValue();
+        } else {
+            constant -= atom.getValue();
+        }
+    }
 
-	public void addConstant(ObservedAtom atom, double coefficient) {
-		addConstant(atom.getValue() * coefficient);
-	}
+    public void addConstant(ObservedAtom atom, double coefficient) {
+        addConstant(atom.getValue() * coefficient);
+    }
 
-	public void addAtom(RandomVariableAtom atom, boolean isPositive) {
-		addAtom(atom, isPositive ? 1.0 : -1.0);
-	}
+    public void addAtom(RandomVariableAtom atom, boolean isPositive) {
+        addAtom(atom, isPositive ? 1.0 : -1.0);
+    }
 
-	public void addAtom(RandomVariableAtom atom, double coefficient) {
-		atoms.add(atom);
-		coefficients.add(coefficient);
-	}
+    public void addAtom(RandomVariableAtom atom, double coefficient) {
+        atoms.add(atom);
+        coefficients.add(coefficient);
+    }
 
-	public void add(GroundAtom atom, double coefficient) {
-		if (atom instanceof ObservedAtom) {
-			addConstant((ObservedAtom)atom, coefficient);
-		} else {
-			addAtom((RandomVariableAtom)atom, coefficient);
-		}
-	}
+    public void add(GroundAtom atom, double coefficient) {
+        if (atom instanceof ObservedAtom) {
+            addConstant((ObservedAtom)atom, coefficient);
+        } else {
+            addAtom((RandomVariableAtom)atom, coefficient);
+        }
+    }
 
-	public double getConstant() {
-		return constant;
-	}
+    public double getConstant() {
+        return constant;
+    }
 
-	public boolean isHard() {
-		return hard;
-	}
+    public boolean isHard() {
+        return hard;
+    }
 
-	public boolean isSquared() {
-		return squared;
-	}
+    public boolean isSquared() {
+        return squared;
+    }
 
-	public double getWeight() {
-		return weight;
-	}
+    public double getWeight() {
+        return weight;
+    }
 
-	public RandomVariableAtom getAtom(int index) {
-		return atoms.get(index);
-	}
+    public RandomVariableAtom getAtom(int index) {
+        return atoms.get(index);
+    }
 
-	public List<RandomVariableAtom> getAtoms() {
-		return Collections.unmodifiableList(atoms);
-	}
+    public List<RandomVariableAtom> getAtoms() {
+        return Collections.unmodifiableList(atoms);
+    }
 
-	public double getCoefficient(int index) {
-		return coefficients.get(index).doubleValue();
-	}
+    public double getCoefficient(int index) {
+        return coefficients.get(index).doubleValue();
+    }
 
-	public List<Double> getCoefficients() {
-		return Collections.unmodifiableList(coefficients);
-	}
+    public List<Double> getCoefficients() {
+        return Collections.unmodifiableList(coefficients);
+    }
 
-	public int size() {
-		return atoms.size();
-	}
+    public int size() {
+        return atoms.size();
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
 
-		if (!hard) {
-			builder.append("" + weight + " * ( ");
-		}
+        if (!hard) {
+            builder.append("" + weight + " * ( ");
+        }
 
-		if (squared) {
-			builder.append("( ");
-		}
+        if (squared) {
+            builder.append("( ");
+        }
 
-		builder.append(constant);
+        builder.append(constant);
 
-		for (int i = 0; i < atoms.size(); i++) {
-			builder.append(coefficients.get(i));
-			builder.append(" * ");
-			builder.append(atoms.get(i));
-		}
+        for (int i = 0; i < atoms.size(); i++) {
+            builder.append(coefficients.get(i));
+            builder.append(" * ");
+            builder.append(atoms.get(i));
+        }
 
-		if (squared) {
-			builder.append(" ) ^2");
-		}
+        if (squared) {
+            builder.append(" ) ^2");
+        }
 
-		if (!hard) {
-			builder.append(" )");
-		}
+        if (!hard) {
+            builder.append(" )");
+        }
 
-		return builder.toString();
-	}
+        return builder.toString();
+    }
 
-	@Override
-	public void weightChanged() {
-	}
+    @Override
+    public void weightChanged() {
+    }
 
     @Override
     public GroundRule getGroundRule() {

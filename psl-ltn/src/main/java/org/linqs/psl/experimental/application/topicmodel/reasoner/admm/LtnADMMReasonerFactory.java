@@ -28,9 +28,9 @@ import org.linqs.psl.reasoner.ReasonerFactory;
  */
 public class LtnADMMReasonerFactory implements ReasonerFactory {
 
-	@Override
-	public Reasoner getReasoner(ConfigBundle config)
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-		return new LatentTopicNetworkADMMReasoner(config);
-	}
+    @Override
+    public Reasoner getReasoner(ConfigBundle config)
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        return new LatentTopicNetworkADMMReasoner(config);
+    }
 }

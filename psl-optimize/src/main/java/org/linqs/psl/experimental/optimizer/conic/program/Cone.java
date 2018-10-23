@@ -23,21 +23,21 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 abstract public class Cone extends Entity {
-	Cone(ConicProgram p) {
-		super(p);
-	}
+    Cone(ConicProgram p) {
+        super(p);
+    }
 
-	abstract public void delete();
+    abstract public void delete();
 
-	abstract public void setBarrierGradient(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D g);
+    abstract public void setBarrierGradient(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D g);
 
-	abstract public void setBarrierHessian(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D H);
+    abstract public void setBarrierHessian(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D H);
 
-	abstract public void setBarrierHessianInv(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D Hinv);
+    abstract public void setBarrierHessianInv(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D Hinv);
 
-	abstract public boolean isInterior(Map<Variable, Integer> varMap, DoubleMatrix1D x);
+    abstract public boolean isInterior(Map<Variable, Integer> varMap, DoubleMatrix1D x);
 
-	abstract public void setInteriorDirection(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D d);
+    abstract public void setInteriorDirection(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D d);
 
-	abstract public double getMaxStep(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D dx);
+    abstract public double getMaxStep(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D dx);
 }

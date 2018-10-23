@@ -43,142 +43,142 @@ import java.util.Vector;
 
 public class ObjectiveCoefficientPartitioner {
 
-	private static final Logger log = LoggerFactory.getLogger(ObjectiveCoefficientPartitioner.class);
+    private static final Logger log = LoggerFactory.getLogger(ObjectiveCoefficientPartitioner.class);
 
-	protected static final int base = 2;
-	protected ConicProgram program;
-	protected ConicProgramPartition partition;
+    protected static final int base = 2;
+    protected ConicProgram program;
+    protected ConicProgramPartition partition;
 
-	protected BiMap<Cone, Node> coneMap;
-	protected BiMap<LinearConstraint, Node> lcMap;
+    protected BiMap<Cone, Node> coneMap;
+    protected BiMap<LinearConstraint, Node> lcMap;
 
 
-	private static final String LC_REL = "lcRel";
+    private static final String LC_REL = "lcRel";
 
-	public void setConicProgram(ConicProgram program) {
-		this.program = program;
-		doPartition();
-	}
+    public void setConicProgram(ConicProgram program) {
+        this.program = program;
+        doPartition();
+    }
 
-	protected void doPartition() {
-		Graph graph;
-		Node node;
+    protected void doPartition() {
+        Graph graph;
+        Node node;
 
-		int numElements = (int) Math.ceil((double) program.getNumLinearConstraints() / 5000);
+        int numElements = (int) Math.ceil((double) program.getNumLinearConstraints() / 5000);
 
-		List<List<Node>> graphPartition = null;
+        List<List<Node>> graphPartition = null;
 
-		List<Set<Cone>> blocks;
+        List<Set<Cone>> blocks;
 
-		/* Partitions conic program graph into elements */
-		HierarchicalPartitioning partitioner = new HyperPartitioning();
-		partitioner.setNoPartitioningTrials(10);
-		partitioner.setSize(numElements);
+        /* Partitions conic program graph into elements */
+        HierarchicalPartitioning partitioner = new HyperPartitioning();
+        partitioner.setNoPartitioningTrials(10);
+        partitioner.setSize(numElements);
 
-		boolean redoPartition = false;
+        boolean redoPartition = false;
 
-		do {
-			graph = new MemoryGraph();
-			graph.createRelationshipType(LC_REL);
+        do {
+            graph = new MemoryGraph();
+            graph.createRelationshipType(LC_REL);
 
-			coneMap = HashBiMap.create();
-			lcMap = HashBiMap.create();
+            coneMap = HashBiMap.create();
+            lcMap = HashBiMap.create();
 
-			for (Cone cone : program.getCones()) {
-				node = graph.createNode();
-				coneMap.put(cone, node);
-			}
+            for (Cone cone : program.getCones()) {
+                node = graph.createNode();
+                coneMap.put(cone, node);
+            }
 
-			Set<Cone> coneSet = new HashSet<Cone>();
-			for (LinearConstraint con : program.getConstraints()) {
-				node = graph.createNode();
-				lcMap.put(con, node);
+            Set<Cone> coneSet = new HashSet<Cone>();
+            for (LinearConstraint con : program.getConstraints()) {
+                node = graph.createNode();
+                lcMap.put(con, node);
 
-				for (Variable var : con.getVariables().keySet()) {
-					coneSet.add(var.getCone());
-				}
+                for (Variable var : con.getVariables().keySet()) {
+                    coneSet.add(var.getCone());
+                }
 
-				for (Cone cone : coneSet) {
-					node.createRelationship(LC_REL, coneMap.get(cone));
-				}
+                for (Cone cone : coneSet) {
+                    node.createRelationship(LC_REL, coneMap.get(cone));
+                }
 
-				coneSet.clear();
-			}
+                coneSet.clear();
+            }
 
-			graphPartition = partitioner.partition(graph, graph.getNodeSnapshot(), new RelationshipWeighter() {
-				@Override
-				public double getWeight(Relationship r) {
-					if (r.getRelationshipType().equals(LC_REL)) {
-						LinearConstraint lc = (LinearConstraint) lcMap.inverse().get(r.getStart());
-						Cone cone = coneMap.inverse().get(r.getEnd());
-						return ObjectiveCoefficientPartitioner.this.getWeight(lc, cone);
-					}
-					else
-						return Double.POSITIVE_INFINITY;
-				}
-			});
+            graphPartition = partitioner.partition(graph, graph.getNodeSnapshot(), new RelationshipWeighter() {
+                @Override
+                public double getWeight(Relationship r) {
+                    if (r.getRelationshipType().equals(LC_REL)) {
+                        LinearConstraint lc = (LinearConstraint) lcMap.inverse().get(r.getStart());
+                        Cone cone = coneMap.inverse().get(r.getEnd());
+                        return ObjectiveCoefficientPartitioner.this.getWeight(lc, cone);
+                    }
+                    else
+                        return Double.POSITIVE_INFINITY;
+                }
+            });
 
-			log.trace("Partition finished. Checking for balance.");
+            log.trace("Partition finished. Checking for balance.");
 
-			/* Checks if blocks are sufficiently balanced */
-			boolean balanced = true;
-			if (numElements > 1) {
-				int totalSize = 0;
-				for (List<Node> block : graphPartition)
-					totalSize += block.size();
+            /* Checks if blocks are sufficiently balanced */
+            boolean balanced = true;
+            if (numElements > 1) {
+                int totalSize = 0;
+                for (List<Node> block : graphPartition)
+                    totalSize += block.size();
 
-				for (List<Node> block : graphPartition){
-					if (block.size() > 2*(totalSize - block.size())) {
-							// log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
-						balanced = false;
-					}
-					if (!balanced) {
-						redoPartition = true;
-						break;
-					}
-				}
+                for (List<Node> block : graphPartition){
+                    if (block.size() > 2*(totalSize - block.size())) {
+                            // log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
+                        balanced = false;
+                    }
+                    if (!balanced) {
+                        redoPartition = true;
+                        break;
+                    }
+                }
 
-				if (!balanced) {
-					redoPartition = true;
-				}
-			}
+                if (!balanced) {
+                    redoPartition = true;
+                }
+            }
 
-			/* Partition accepted */
-			if (!redoPartition) {
-				/* Collects cones in blocks */
-				blocks = new Vector<Set<Cone>>();
-				for (int i = 0; i < graphPartition.size(); i++) {
-					Set<Cone> block = new HashSet<Cone>();
-					for (Node n : graphPartition.get(i)) {
-						/* Adds cone to block */
-						if (coneMap.containsValue(n)) {
-							block.add(coneMap.inverse().get(n));
-						}
-					}
-					blocks.add(block);
-				}
+            /* Partition accepted */
+            if (!redoPartition) {
+                /* Collects cones in blocks */
+                blocks = new Vector<Set<Cone>>();
+                for (int i = 0; i < graphPartition.size(); i++) {
+                    Set<Cone> block = new HashSet<Cone>();
+                    for (Node n : graphPartition.get(i)) {
+                        /* Adds cone to block */
+                        if (coneMap.containsValue(n)) {
+                            block.add(coneMap.inverse().get(n));
+                        }
+                    }
+                    blocks.add(block);
+                }
 
-				/* Initializes the partition */
-				partition = new ConicProgramPartition(program, blocks);
-				return;
-			}
-		} while (true);
-	}
+                /* Initializes the partition */
+                partition = new ConicProgramPartition(program, blocks);
+                return;
+            }
+        } while (true);
+    }
 
-	public ConicProgramPartition getPartition() {
-		return partition;
-	}
+    public ConicProgramPartition getPartition() {
+        return partition;
+    }
 
-	protected double getWeight(LinearConstraint lc, Cone cone) {
-		if (cone instanceof NonNegativeOrthantCone)
-			return Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1);
-		else if (cone instanceof SecondOrderCone) {
-			double weight = 0.0;
-			for (Variable socVar : ((SecondOrderCone) cone).getVariables())
-				weight += socVar.getObjectiveCoefficient();
-			return Math.pow(base, Math.abs(weight) + 1);
-		}
-		else
-			throw new IllegalStateException();
-	}
+    protected double getWeight(LinearConstraint lc, Cone cone) {
+        if (cone instanceof NonNegativeOrthantCone)
+            return Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1);
+        else if (cone instanceof SecondOrderCone) {
+            double weight = 0.0;
+            for (Variable socVar : ((SecondOrderCone) cone).getVariables())
+                weight += socVar.getObjectiveCoefficient();
+            return Math.pow(base, Math.abs(weight) + 1);
+        }
+        else
+            throw new IllegalStateException();
+    }
 }
