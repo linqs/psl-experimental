@@ -27,12 +27,12 @@ import org.linqs.psl.database.Partition;
  * The closure step follows the splitting step in the process of creating train/test splits.
  * This step retrieves all of the atoms relevant to a given split of the instances and
  * places them in the correct DB partition.
- * 
+ *
  * @author blondon
  *
  */
 public interface ClosureStep {
-	
+
 	void doClosure(Database inputDB, List<Collection<Partition>> partitionList);
-	
+
 }

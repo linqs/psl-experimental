@@ -24,7 +24,7 @@ import org.linqs.psl.reasoner.function.FunctionComparator;
 /**
  * A {@link LinearConstraintTerm} that supports smart initialization
  * for latent topic networks.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
 public class LtnLinearConstraintTerm extends LinearConstraintTerm {

@@ -24,5 +24,5 @@ public class PrematureConvergenceException extends RuntimeException {
 	public PrematureConvergenceException(String msg) {
 		super(msg);
 	}
-	
+
 }

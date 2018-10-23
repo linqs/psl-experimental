@@ -26,7 +26,7 @@ import org.linqs.psl.model.rule.Rule;
 /**
  * First order log loss rules, useful when PSL variables are given a
  * probabilistic interpretation, as in latent topic networks.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
 public class LogLoss implements Rule {

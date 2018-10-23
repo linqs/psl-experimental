@@ -23,19 +23,19 @@ import cern.colt.matrix.tdouble.DoubleMatrix1D;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 
 public class NonNegativeOrthantCone extends Cone {
-	
+
 	private Variable var;
-	
+
 	NonNegativeOrthantCone(ConicProgram p) {
 		super(p);
 		var = new Variable(p, this);
 		p.notify(ConicProgramEvent.NNOCCreated, this);
 	}
-	
+
 	public Variable getVariable() {
 		return var;
 	}
-	
+
 	@Override
 	public final void delete() {
 		program.verifyCheckedIn();
@@ -43,17 +43,17 @@ public class NonNegativeOrthantCone extends Cone {
 		var.delete();
 		var = null;
 	}
-	
+
 	public void setBarrierGradient(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D g) {
 		int i = varMap.get(getVariable());
 		g.set(i, -1 / x.get(i));
 	}
-	
+
 	public void setBarrierHessian(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D H) {
 		int i = varMap.get(getVariable());
 		H.set(i, i, Math.pow(x.get(i), -2));
 	}
-	
+
 	public void setBarrierHessianInv(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D Hinv) {
 		int i = varMap.get(getVariable());
 		Hinv.set(i, i, Math.pow(x.get(i), 2));

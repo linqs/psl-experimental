@@ -34,17 +34,17 @@ import org.linqs.psl.reasoner.function.FunctionTerm;
 /**
  * Ground log loss rules, useful when PSL variables are given a probabilistic
  * interpretation, as in latent topic networks.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
 public class GroundLogLoss implements WeightedGroundRule {
-	
+
 	private Weight weight;
 	private WeightedRule kernel;
-	
+
 	protected final List<GroundAtom> literals;
 	protected final List<Double> coefficients;
-	
+
 	public GroundLogLoss(WeightedRule k, List<GroundAtom> literals, List<Double> coefficients) {
 		kernel = k;
 		this.literals = new ArrayList<GroundAtom>(literals);
@@ -58,16 +58,16 @@ public class GroundLogLoss implements WeightedGroundRule {
 
 	@Override
 	public Weight getWeight() {
-		if (weight == null) 
+		if (weight == null)
 			return getRule().getWeight();
 		return weight;
 	}
-	
+
 	@Override
 	public void setWeight(Weight w) {
 		weight = w;
 	}
-	
+
 	@Override
 	public FunctionTerm getFunctionDefinition() {
 		NegativeLogFunction returner = new NegativeLogFunction();
@@ -92,7 +92,7 @@ public class GroundLogLoss implements WeightedGroundRule {
 		}
 		return returner;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "{" + getWeight().toString() + "} " + "Logloss" + super.toString();
@@ -102,7 +102,7 @@ public class GroundLogLoss implements WeightedGroundRule {
 	public Set<GroundAtom> getAtoms() {
 		HashSet<GroundAtom> atoms = new HashSet<GroundAtom>();
 		for (GroundAtom atom : literals)
-			atoms.add(atom);		
+			atoms.add(atom);
 		return atoms;
 	}
 

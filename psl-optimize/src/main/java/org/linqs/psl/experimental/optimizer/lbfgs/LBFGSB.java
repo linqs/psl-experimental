@@ -26,7 +26,6 @@ import java.io.*;
  * C. Zhu, R.H. Byrd, P. Lu, J. Nocedal, ``L-BFGS-B: a limited memory FORTRAN code for solving bound constrained
  * optimization problems'', Tech. Report, NAM-11, EECS Department, Northwestern University.
  */
-
 public class LBFGSB
 {
   private final int LBFGSB_PRINT = -1; //-1: no output; 1: output for every iteration
@@ -866,20 +865,20 @@ public class LBFGSB
       {
         if (nbd[i] <= 2 && x[i] <= l[i])
         {
-	        if (x[i] < l[i])
+          if (x[i] < l[i])
           {
             prjctd[0] = true;
-	          x[i] = l[i];
+            x[i] = l[i];
           }
           nbdd += 1;
         }
         else
         if (nbd[i] >= 2 && x[i] >= u[i])
         {
-	        if (x[i] > u[i])
+          if (x[i] > u[i])
           {
             prjctd[0] = true;
-	          x[i] = u[i];
+            x[i] = u[i];
           }
           nbdd += 1;
         }
@@ -2255,29 +2254,29 @@ public class LBFGSB
       dk = d[i];
       if (nbd[k] != 0)
       {
-   	    if (dk < 0.0 && nbd[k] <= 2)
+        if (dk < 0.0 && nbd[k] <= 2)
         {
-	        temp2 = l[k] - x[k];
-	        if (temp2 >= 0.0)
-   		      temp1 = 0.0;
-	        else
+            temp2 = l[k] - x[k];
+            if (temp2 >= 0.0)
+                temp1 = 0.0;
+            else
           if (dk*alpha < temp2)
-		        temp1 = temp2/dk;
+                temp1 = temp2/dk;
         }
-   	    else
+        else
         if (dk > 0.0 && nbd[k] >= 2)
         {
-	        temp2 = u[k] - x[k];
-	        if (temp2 <= 0.0)
-		        temp1 = 0.0;
+            temp2 = u[k] - x[k];
+            if (temp2 <= 0.0)
+                temp1 = 0.0;
           else
           if (dk*alpha > temp2)
-		        temp1 = temp2/dk;
+                temp1 = temp2/dk;
         }
         if (temp1 < alpha)
         {
-	        alpha = temp1;
-	        ibd = i;
+            alpha = temp1;
+            ibd = i;
         }
       }
     }

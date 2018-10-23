@@ -50,31 +50,31 @@ import java.util.Vector;
 
 abstract public class HierarchicalPartitioner extends AbstractCompletePartitioner
 		implements ConicProgramListener {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(HierarchicalPartitioner.class);
 
 	protected BiMap<Cone, Node> coneMap;
 	protected BiMap<LinearConstraint, Node> lcMap;
 	protected Set<LinearConstraint> alwaysCutConstraints;
 	protected Set<LinearConstraint> restrictedConstraints;
-	
+
 	protected int p;
-	
+
 	private static final String LC_REL = "lcRel";
-	
+
 	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(2);
 	static {
 		supportedCones.add(ConeType.NonNegativeOrthantCone);
 		supportedCones.add(ConeType.SecondOrderCone);
 	}
-	
+
 	@Override
 	public void setConicProgram(ConicProgram p) {
 		if (program != null)
 			program.unregisterForConicProgramEvents(this);
-		
+
 		super.setConicProgram(p);
-		
+
 		program.registerForConicProgramEvents(this);
 	}
 
@@ -86,21 +86,21 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 	protected void doPartition() {
 		Graph graph;
 		Node node;
-		
+
 		partitions.clear();
-		
+
 		int numElements = (int) Math.ceil((double) program.getNumLinearConstraints() / 5000);
-		
+
 		List<List<Node>> graphPartition = null;
 		alwaysCutConstraints = new HashSet<LinearConstraint>();
 		restrictedConstraints = new HashSet<LinearConstraint>();
 
 		List<Set<Cone>> blocks;
-		
+
 		/* Partitions conic program graph into elements */
 		Partitioner partitioner = new HyperPartitioning();
 		partitioner.setSize(numElements);
-		
+
 		boolean redoPartition;
 		p = 0;
 		do {
@@ -108,31 +108,31 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 			try {
 				graph = new MemoryGraph();
 				graph.createRelationshipType(LC_REL);
-				
+
 				coneMap = HashBiMap.create();
 				lcMap = HashBiMap.create();
-				
+
 				for (Cone cone : program.getCones()) {
 					node = graph.createNode();
 					coneMap.put(cone, node);
 				}
-				
+
 				Set<Cone> coneSet = new HashSet<Cone>();
 				for (LinearConstraint con : program.getConstraints()) {
 					node = graph.createNode();
 					lcMap.put(con, node);
-					
+
 					for (Variable var : con.getVariables().keySet()) {
 						coneSet.add(var.getCone());
 					}
-					
+
 					for (Cone cone : coneSet) {
 						node.createRelationship(LC_REL, coneMap.get(cone));
 					}
-					
+
 					coneSet.clear();
 				}
-				
+
 				graphPartition = partitioner.partition(graph, graph.getNodeSnapshot(), new RelationshipWeighter() {
 					@Override
 					public double getWeight(Relationship r) {
@@ -155,21 +155,21 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 						itr.next();
 						itr.remove();
 					}
-					
+
 					redoPartition = true;
 				}
 				else throw e;
 			}
-			
+
 			log.trace("Partition finished. Checking for balance.");
-			
+
 			/* Checks if blocks are sufficiently balanced */
 			boolean balanced = true;
 			if (!redoPartition && numElements > 1) {
 				int totalSize = 0;
 				for (List<Node> block : graphPartition)
 					totalSize += block.size();
-				
+
 				for (List<Node> block : graphPartition){
 					if (block.size() > 2*(totalSize - block.size())) {
 						log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
@@ -180,10 +180,10 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 						break;
 					}
 				}
-				
+
 				if (!balanced) {
 					redoPartition = true;
-					
+
 					if (restrictedConstraints.size() > 1 && restrictedConstraints.size() > alwaysCutConstraints.size() / 2) {
 						Iterator<LinearConstraint> itr = restrictedConstraints.iterator();
 						while (restrictedConstraints.size() > alwaysCutConstraints.size() / 1.5) {
@@ -196,7 +196,7 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 
 			/* Partition accepted */
 			if (!redoPartition) {
-				
+
 				/* Collects cones in blocks */
 				blocks = new Vector<Set<Cone>>();
 				for (int i = 0; i < graphPartition.size(); i++) {
@@ -209,12 +209,12 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 					}
 					blocks.add(block);
 				}
-				
+
 				/* Initializes the partition */
 				ConicProgramPartition partition = new ConicProgramPartition(program, blocks);
 				log.debug("Size of cut constraints: {}", partition.getCutConstraints().size());
 				partitions.add(partition);
-				
+
 				/* Updates the sets of always cut constraints and restricted constraints */
 				if (p == 0) {
 					alwaysCutConstraints.addAll(partition.getCutConstraints());
@@ -240,11 +240,11 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 							singletons.add(cone);
 						}
 					}
-					
+
 					if (singletons.size() < elements.size())
-//						throw new IllegalStateException("Not enough singletons to cut constraint. Needed " + elements.size() + ".");
+						// throw new IllegalStateException("Not enough singletons to cut constraint. Needed " + elements.size() + ".");
 						log.warn("Not enough singletons to cut constraint. Needed {}.", elements.size());
-					
+
 					Iterator<Integer> itr = elements.iterator();
 					for (Cone cone : singletons) {
 						partition.addCone(cone, itr.next());
@@ -252,9 +252,9 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 							itr = elements.iterator();
 					}
 				}
-				
+
 				processAcceptedPartition();
-				
+
 				log.debug("Number of always cut constraints: {}", alwaysCutConstraints.size());
 				p++;
 			}
@@ -267,11 +267,11 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 	@Override
 	public void notify(ConicProgram sender, ConicProgramEvent event, Entity entity, Object... data) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	abstract protected double getWeight(LinearConstraint lc, Cone cone);
-	
+
 	abstract protected void processAcceptedPartition();
 
 	protected boolean isSingleton(Cone cone) {
@@ -292,7 +292,7 @@ abstract public class HierarchicalPartitioner extends AbstractCompletePartitione
 						return false;
 				}
 			}
-			
+
 			return true;
 		}
 		else

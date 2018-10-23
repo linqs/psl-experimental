@@ -29,12 +29,12 @@ import java.util.Queue;
 import java.util.Set;
 
 public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner {
-	
+
 	private double[] weights;
-	
+
 	private static final int base = 10;
 	private static final int depthLimit = 1;
-	
+
 	@Override
 	protected void doPartition() {
 		weights = new double[program.getNumLinearConstraints()];
@@ -46,7 +46,7 @@ public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner
 	@Override
 	protected double getWeight(LinearConstraint lc, Cone cone) {
 		boolean hasFirstSingleton = false;
-		
+
 		for (Variable var : lc.getVariables().keySet()) {
 			if (isSingleton(var.getCone())) {
 				if (hasFirstSingleton) {
@@ -71,7 +71,7 @@ public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner
 				}
 			}
 		}
-		
+
 		return Double.POSITIVE_INFINITY;
 
 	}
@@ -79,30 +79,32 @@ public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner
 	@Override
 	protected void processAcceptedPartition() {
 		/* Computes weights */
-//		for (int i = 0; i < weights.length; i++)
-//			weights[i] = 1;
-		
+		/*
+		for (int i = 0; i < weights.length; i++)
+			weights[i] = 1;
+		*/
+
 		Queue<ConstraintDepthPair> queue = new LinkedList<ConstraintDepthPair>();
 		Set<LinearConstraint> closedSet = new HashSet<LinearConstraint>();
 		Set<LinearConstraint> consToProcess = new HashSet<LinearConstraint>();
 		ConstraintDepthPair cdPair, newCDPair;
 		int index;
-		
+
 		for (LinearConstraint lcToUpdate : partitions.lastElement().getCutConstraints()) {
 			index = program.getIndex(lcToUpdate);
-			
+
 			if (alwaysCutConstraints.contains(lcToUpdate))
 				weights[index] += 10000;
-			
+
 			closedSet.add(lcToUpdate);
 			newCDPair = new ConstraintDepthPair();
 			newCDPair.constraint = lcToUpdate;
 			newCDPair.depth = 0;
 			queue.add(newCDPair);
-			
+
 			while (!queue.isEmpty()) {
 				cdPair =  queue.remove();
-				
+
 				for (Variable conVar : cdPair.constraint.getVariables().keySet()) {
 					Cone cone = conVar.getCone();
 					if (cone instanceof NonNegativeOrthantCone) {
@@ -115,7 +117,7 @@ public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner
 					else
 						throw new IllegalStateException();
 				}
-				
+
 				for (LinearConstraint conToProcess : consToProcess) {
 					if (!closedSet.contains(conToProcess)) {
 						weights[index] += Math.pow(base, (depthLimit - cdPair.depth));
@@ -133,7 +135,7 @@ public class WeightedDistanceCompletePartitioner extends HierarchicalPartitioner
 			consToProcess.clear();
 		}
 	}
-	
+
 	final class ConstraintDepthPair {
 		private LinearConstraint constraint;
 		private int depth;

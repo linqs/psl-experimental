@@ -38,7 +38,7 @@ import org.linqs.psl.model.rule.WeightedRule;
  * Learns weights by optimizing the pseudo-log-likelihood of the data.
  * Modified version of MaxPseudoLikelihood which takes the LTN's log losses
  * into account by importance sampling from the implied Dirichlet distribution.
- * 
+ *
  * @author Ben London <blondon@cs.umd.edu>
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
@@ -46,11 +46,11 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
+	 *
 	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "LTNmaxspeudolikelihood";
-	
+
 	/**
 	 * Boolean property. If true, MaxPseudoLikelihood will treat RandomVariableAtoms
 	 * as boolean valued. Note that this restricts the types of contraints supported.
@@ -58,7 +58,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 	public static final String BOOLEAN_KEY = CONFIG_PREFIX + ".bool";
 	/** Default value for BOOLEAN_KEY */
 	public static final boolean BOOLEAN_DEFAULT = false;
-	
+
 	/**
 	 * Key for positive integer property.
 	 * MaxPseudoLikelihood will sample this many values to approximate
@@ -67,14 +67,14 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 	public static final String NUM_SAMPLES_KEY = CONFIG_PREFIX + ".numsamples";
 	/** Default value for NUM_SAMPLES_KEY */
 	public static final int NUM_SAMPLES_DEFAULT = 10;
-	
+
 	/**
 	 * Key for constraint violation tolerance
 	 */
 	public static final String CONSTRAINT_TOLERANCE_KEY = CONFIG_PREFIX + ".constrainttolerance";
 	/** Default value for CONSTRAINT_TOLERANCE **/
 	public static final double CONSTRAINT_TOLERANCE_DEFAULT = 1e-5;
-	
+
 	/**
 	 * Key for positive double property.
 	 * Used as minimum width for bounds of integration.
@@ -82,17 +82,17 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 	public static final String MIN_WIDTH_KEY = CONFIG_PREFIX + ".minwidth";
 	/** Default value for MIN_WIDTH_KEY */
 	public static final double MIN_WIDTH_DEFAULT = 1e-2;
-	
+
 	private ConstraintBlocker blocker;
 	private final boolean bool;
 	private final int numSamples;
 	private final double minWidth;
 	private final double constraintTol;
-	
+
 	//Latent Topic Network-specific variables.
 	private double dirichletParam; //alpha or beta.  This should be greater than one.
 	private Predicate p; //Either Theta or Phi.
-	
+
 	/**
 	 * Constructor
 	 * @param model
@@ -114,14 +114,14 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 		constraintTol = config.getDouble(CONSTRAINT_TOLERANCE_KEY, CONSTRAINT_TOLERANCE_DEFAULT);
 		if (constraintTol <= 0)
 			throw new IllegalArgumentException("Minimum width must be positive double.");
-		
+
 		//LTN-specific variables
 		this.dirichletParam = dirichletParam;
 		this.p = p;
 	}
-	
+
 	/**
-	 * Note: calls super.initGroundModel() first, in order to ground model. 
+	 * Note: calls super.initGroundModel() first, in order to ground model.
 	 */
 	@Override
 	public void initGroundModel()
@@ -131,7 +131,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 		blocker = new ConstraintBlocker(reasoner);
 		blocker.prepareBlocks(true);
 	}
-	
+
 	/**
 	 * Computes the expected incompatibility using the pseudolikelihood.
 	 * Uses Monte Carlo integration to approximate definite integrals,
@@ -145,17 +145,17 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 		boolean[] exactlyOne = blocker.getExactlyOne();
 		/* Collects GroundCompatibilityKernels incident on each block of RandomVariableAtoms */
 		WeightedGroundRule[][] incidentGKs = blocker.getIncidentGKs();
-		
+
 		double[] expInc = new double[kernels.size()];
-		
+
 		/* Accumulate the expected incompatibility over all atoms */
 		for (int iBlock = 0; iBlock < rvBlocks.length; iBlock++) {
-			
+
 			if (rvBlocks[iBlock].length == 0)
 				continue;
 			if (incidentGKs[iBlock].length == 0)
 				continue;
-			
+
 			boolean isTopicVar = true;
 			for (int iVar = 0; iVar < rvBlocks[iBlock].length; iVar++) {
 				if (rvBlocks[iBlock][iVar].getPredicate() != p) { //Not Theta or Phi
@@ -163,7 +163,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 					continue;
 				}
 			}
-			
+
 			/* Sample numSamples random numbers in the range of integration */
 			double[][] s;
 			if (!bool) {
@@ -190,15 +190,15 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 				if (!exactlyOne[iBlock])
 					s[s.length-1] = new double[rvBlocks[iBlock].length];
 			}
-				
+
 			/* Compute the incompatibility of each sample for each kernel */
 			HashMap<WeightedRule,double[]> incompatibilities = new HashMap<WeightedRule,double[]>();
-			
+
 			/* Saves original state */
 			double[] originalState = new double[rvBlocks[iBlock].length];
 			for (int iSave = 0; iSave < rvBlocks[iBlock].length; iSave++)
 				originalState[iSave] = rvBlocks[iBlock][iSave].getValue();
-			
+
 			/* Computes the probability */
 			for (GroundRule gk : incidentGKs[iBlock]) {
 				if (gk instanceof WeightedGroundRule) {
@@ -210,16 +210,16 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 						/* Changes the state of the block to the next point */
 						for (int iChange = 0; iChange < rvBlocks[iBlock].length; iChange++)
 							rvBlocks[iBlock][iChange].setValue(s[iSample][iChange]);
-						
+
 						inc[iSample] += ((WeightedGroundRule) gk).getIncompatibility();
 					}
 				}
 			}
-			
+
 			/* Remember to return the block to its original state! */
 			for (int iChange = 0; iChange < rvBlocks[iBlock].length; iChange++)
 				rvBlocks[iBlock][iChange].setValue(originalState[iChange]);
-			
+
 			/* Compute the exp incomp and accumulate the partition for the current atom. */
 			HashMap<WeightedRule,Double> expIncAtom = new HashMap<WeightedRule,Double>();
 			double Z = 0.0;
@@ -244,18 +244,18 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 					expIncAtom.put(k, val);
 				}
 			}
-			/* Finally, we add to the exp incomp for each kernel */ 
+			/* Finally, we add to the exp incomp for each kernel */
 			for (int i = 0; i < kernels.size(); i++) {
 				WeightedRule k = kernels.get(i);
 				if (expIncAtom.containsKey(k))
-					if (expIncAtom.get(k) > 0.0) 
+					if (expIncAtom.get(k) > 0.0)
 						expInc[i] += expIncAtom.get(k) / Z;
 			}
 		}
-	
+
 		return expInc;
 	}
-	
+
 	private static double[] sampleFromDirichlet(int dimensionality, double concentration) {
 		//Draw a sample from a Dirichlet distribution
 		double[] sample = new double[dimensionality];
@@ -271,7 +271,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 		//TODO check for NaN
 		return sample;
 	}
-	
+
 	//source: http://vyshemirsky.blogspot.com/2007/11/sample-from-gamma-distribution-in-java.html
 	private static Random rng = new Random(java.util.Calendar.getInstance().getTimeInMillis() + Thread.currentThread().getId());
 	private static double sampleGamma(double k, double theta) {
@@ -307,7 +307,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood extends VotedPerceptron {
 				  x = (k * Math.exp(y));
 				  z = (u * v * v);
 				  r = (b + (c * y) - x);
-				  if ((r >= ((4.5 * z) - cheng)) ||	(r >= Math.log(z))) {
+				  if ((r >= ((4.5 * z) - cheng)) || (r >= Math.log(z))) {
 					 accept = true;
 				  }
 			 } while (!accept);

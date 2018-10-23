@@ -25,9 +25,9 @@ abstract public class Entity {
 		program = p;
 		id = p.getNextID();
 	}
-	
+
 	abstract void delete();
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (o == null)
@@ -37,7 +37,7 @@ abstract public class Entity {
 		else
 			return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return id;

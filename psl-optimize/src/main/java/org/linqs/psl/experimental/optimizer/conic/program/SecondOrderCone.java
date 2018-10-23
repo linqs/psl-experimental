@@ -27,10 +27,10 @@ import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.jet.math.tdouble.DoubleFunctions;
 
 public class SecondOrderCone extends Cone {
-	
+
 	private Set<Variable> vars;
 	private Variable varN;
-	
+
 	SecondOrderCone(ConicProgram p, int n) {
 		super(p);
 		if (n < 2)
@@ -46,25 +46,25 @@ public class SecondOrderCone extends Cone {
 		var.setDualValue(1.5 * (n-1));
 		p.notify(ConicProgramEvent.SOCCreated, this);
 	}
-	
+
 	public int getN() {
 		return vars.size();
 	}
-	
+
 	public Set<Variable> getVariables() {
 		return new HashSet<Variable>(vars);
 	}
-	
+
 	public Variable getNthVariable() {
 		return varN;
 	}
-	
+
 	public Set<Variable> getInnerVariables() {
 		Set<Variable> set = new HashSet<Variable>(vars);
 		set.remove(varN);
 		return set;
 	}
-	
+
 	@Override
 	public final void delete() {
 		program.verifyCheckedIn();
@@ -75,7 +75,7 @@ public class SecondOrderCone extends Cone {
 		vars = null;
 		varN = null;
 	}
-	
+
 	public void setBarrierGradient(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix1D g) {
 		Set<Variable> vars = getVariables();
 		int[] indices = new int[vars.size()];
@@ -92,7 +92,7 @@ public class SecondOrderCone extends Cone {
 		gSel.assign(xSel).assign(DoubleFunctions.mult(coeff));
 		gSel.set(i, gSel.get(i) * -1);
 	}
-	
+
 	public void setBarrierHessian(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D H) {
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		Set<Variable> vars = getVariables();
@@ -113,7 +113,7 @@ public class SecondOrderCone extends Cone {
 			HSel.set(j, j, HSel.get(j, j) + coeff);
 		HSel.set(i, i, HSel.get(i,i) - coeff);
 	}
-	
+
 	public void setBarrierHessianInv(Map<Variable, Integer> varMap, DoubleMatrix1D x, DoubleMatrix2D Hinv) {
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		Set<Variable> vars = getVariables();
@@ -186,18 +186,18 @@ public class SecondOrderCone extends Cone {
 		}
 		DoubleMatrix1D x1NMinus1 = x.viewSelection(indices).copy();
 		DoubleMatrix1D dx1NMinus1 = dx.viewSelection(indices).copy();
-		
+
 		DoubleMatrix1D current = x1NMinus1.copy();
 		current.assign(dx1NMinus1, DoubleFunctions.plus);
-		
+
 		double alpha = 1.0;
-		
+
 		while (xN + dxN <= Math.sqrt(current.zDotProduct(current))) {
 			alpha *= 0.9;
 			dxN *= 0.9;
 			current.assign(x1NMinus1).assign(dx1NMinus1, DoubleFunctions.plusMultSecond(alpha));
 		}
-		
+
 		return alpha;
 	}
 }

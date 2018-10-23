@@ -44,7 +44,7 @@ public class CVXPYReasoner extends ExecutableReasoner {
 	}
 
 	public CVXPYReasoner(String executablePath) {
-		super(executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
+		super(executablePath, MODEL_PATH, RESULTS_PATH, new String[]{MODEL_PATH, RESULTS_PATH});
 	}
 
 	@Override

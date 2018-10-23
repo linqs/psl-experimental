@@ -27,12 +27,12 @@ public class DBDefinition {
 
 	public Partition write;
 	public Partition[] read;
-	public Set<StandardPredicate> toClose; 
-	
+	public Set<StandardPredicate> toClose;
+
 	public DBDefinition(Partition write, Set<StandardPredicate> toClose, Partition[] read) {
 	    this.write=write;
 	    this.toClose=toClose;
 	    this.read=read;
 	}
-	
+
 }

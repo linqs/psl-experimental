@@ -29,12 +29,12 @@ import org.linqs.psl.reasoner.function.FunctionVariable;
  * In the sum, the logarithms are multiplied by the coefficients of the FunctionSummands.
  */
 public class NegativeLogFunction extends FunctionSum {
-	
+
 	public NegativeLogFunction() {
 		super();
 	}
-	
-	
+
+
 	/**
 	 * Returns the sum of the logs of the values of the atoms
 	 *
@@ -46,7 +46,7 @@ public class NegativeLogFunction extends FunctionSum {
 		for (FunctionSummand s : sum) val-= s.getCoefficient() * Math.log(s.getTerm().getValue());
 		return val;
 	}
-	
+
 	@Override
 	public double getValue(Map<? extends FunctionVariable,Double> values, boolean useCurrentValues) {
 		//TODO I'm not at all sure that this is what should be done here.
@@ -56,13 +56,13 @@ public class NegativeLogFunction extends FunctionSum {
 	}
 
 
-	
+
 	@Override
 	public boolean isLinear() {
 		return false;
 	}
-	
-		
+
+
 	@Override
 	public String toString() {
 		StringBuilder string = new StringBuilder();
@@ -78,5 +78,5 @@ public class NegativeLogFunction extends FunctionSum {
 		string.append(")");
 		return string.toString();
 	}
-	
+
 }

@@ -22,15 +22,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Variable extends Entity {
-	
+
 	private Cone cone;
-	
+
 	private double primalValue;
 	private double dualValue;
 	private double objCoeff;
-	
+
 	private Set<LinearConstraint> cons;
-	
+
 	Variable(ConicProgram p, Cone c) {
 		super(p);
 		cone = c;
@@ -43,52 +43,52 @@ public class Variable extends Entity {
 	public Cone getCone() {
 		return cone;
 	}
-	
+
 	public Double getValue() {
 		return primalValue;
 	}
-	
+
 	void setValue(Double v) {
 		primalValue = v;
 	}
-	
+
 	public Double getDualValue() {
 		return dualValue;
 	}
-	
+
 	void setDualValue(Double v) {
 		dualValue = v;
 	}
-	
+
 	public Double getObjectiveCoefficient() {
 		return objCoeff;
 	}
-	
+
 	public void setObjectiveCoefficient(Double c) {
 		program.verifyCheckedIn();
 		doSetObjectiveCoefficient(c);
 		program.notify(ConicProgramEvent.ObjCoeffChanged, this);
 	}
-	
+
 	private void doSetObjectiveCoefficient(Double c) {
 		objCoeff = c;
 	}
-	
+
 	public Set<LinearConstraint> getLinearConstraints() {
 		return Collections.unmodifiableSet(cons);
 	}
-	
+
 	void notifyAddedToLinearConstraint(LinearConstraint con) {
 		cons.add(con);
 	}
 	void notifyRemovedFromLinearConstraint(LinearConstraint con) {
 		cons.remove(con);
 	}
-	
+
 	boolean isDualFeasible() {
 		return Math.abs(distanceFromDualFeasiblity()) < 10e-8;
 	}
-	
+
 	double distanceFromDualFeasiblity() {
 		double dist = 0.0;
 		for (LinearConstraint lc : getLinearConstraints()) {
@@ -98,7 +98,7 @@ public class Variable extends Entity {
 		dist -= getObjectiveCoefficient();
 		return dist;
 	}
-	
+
 	@Override
 	final void delete() {
 		Set<LinearConstraint> originalCons = new HashSet<LinearConstraint>(cons);

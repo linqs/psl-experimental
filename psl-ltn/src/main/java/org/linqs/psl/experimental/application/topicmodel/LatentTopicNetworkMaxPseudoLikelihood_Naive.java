@@ -39,7 +39,7 @@ import org.linqs.psl.model.rule.WeightedRule;
  * This is the naive version which still importance samples from the uniform distribution
  * instead of the Dirichlet.  It runs into numerical stability problems (which could be
  * improved by the log-sum-exp trick, TODO, though I don't recommend to use this code!)
- * 
+ *
  * @author Ben London <blondon@cs.umd.edu>
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
@@ -47,11 +47,11 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 
 	/**
 	 * Prefix of property keys used by this class.
-	 * 
+	 *
 	 * @see ConfigManager
 	 */
 	public static final String CONFIG_PREFIX = "LTNmaxspeudolikelihood";
-	
+
 	/**
 	 * Boolean property. If true, MaxPseudoLikelihood will treat RandomVariableAtoms
 	 * as boolean valued. Note that this restricts the types of contraints supported.
@@ -59,7 +59,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 	public static final String BOOLEAN_KEY = CONFIG_PREFIX + ".bool";
 	/** Default value for BOOLEAN_KEY */
 	public static final boolean BOOLEAN_DEFAULT = false;
-	
+
 	/**
 	 * Key for positive integer property.
 	 * MaxPseudoLikelihood will sample this many values to approximate
@@ -68,14 +68,14 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 	public static final String NUM_SAMPLES_KEY = CONFIG_PREFIX + ".numsamples";
 	/** Default value for NUM_SAMPLES_KEY */
 	public static final int NUM_SAMPLES_DEFAULT = 10;
-	
+
 	/**
 	 * Key for constraint violation tolerance
 	 */
 	public static final String CONSTRAINT_TOLERANCE_KEY = CONFIG_PREFIX + ".constrainttolerance";
 	/** Default value for CONSTRAINT_TOLERANCE **/
 	public static final double CONSTRAINT_TOLERANCE_DEFAULT = 1e-5;
-	
+
 	/**
 	 * Key for positive double property.
 	 * Used as minimum width for bounds of integration.
@@ -83,17 +83,17 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 	public static final String MIN_WIDTH_KEY = CONFIG_PREFIX + ".minwidth";
 	/** Default value for MIN_WIDTH_KEY */
 	public static final double MIN_WIDTH_DEFAULT = 1e-2;
-	
+
 	private ConstraintBlocker blocker;
 	private final boolean bool;
 	private final int numSamples;
 	private final double minWidth;
 	private final double constraintTol;
-	
+
 	//Latent Topic Network-specific variables.
 	private double dirichletParam; //alpha or beta.  This should be greater than one.
 	private Predicate p; //Either Theta or Phi.
-	
+
 	/**
 	 * Constructor
 	 * @param model
@@ -115,14 +115,14 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 		constraintTol = config.getDouble(CONSTRAINT_TOLERANCE_KEY, CONSTRAINT_TOLERANCE_DEFAULT);
 		if (constraintTol <= 0)
 			throw new IllegalArgumentException("Minimum width must be positive double.");
-		
+
 		//LTN-specific variables
 		this.dirichletParam = dirichletParam;
 		this.p = p;
 	}
-	
+
 	/**
-	 * Note: calls super.initGroundModel() first, in order to ground model. 
+	 * Note: calls super.initGroundModel() first, in order to ground model.
 	 */
 	@Override
 	public void initGroundModel()
@@ -132,7 +132,7 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 		blocker = new ConstraintBlocker(reasoner);
 		blocker.prepareBlocks(true);
 	}
-	
+
 	/**
 	 * Computes the expected incompatibility using the pseudolikelihood.
 	 * Uses Monte Carlo integration to approximate definite integrals,
@@ -146,18 +146,18 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 		boolean[] exactlyOne = blocker.getExactlyOne();
 		/* Collects GroundCompatibilityKernels incident on each block of RandomVariableAtoms */
 		WeightedGroundRule[][] incidentGKs = blocker.getIncidentGKs();
-		
+
 		double[] expInc = new double[kernels.size()];
-		
+
 		/* Accumulate the expected incompatibility over all atoms */
 		for (int iBlock = 0; iBlock < rvBlocks.length; iBlock++) {
-			
+
 			if (rvBlocks[iBlock].length == 0)
 				// TODO: Is this correct?
 				continue;
 			if (incidentGKs[iBlock].length == 0)
 				continue; //Also TODO: Is this correct? -JF
-			
+
 			/* Sample numSamples random numbers in the range of integration */
 			double[][] s;
 			if (!bool) {
@@ -176,17 +176,17 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 				if (!exactlyOne[iBlock])
 					s[s.length-1] = new double[rvBlocks[iBlock].length];
 			}
-				
+
 			/* Compute the incompatibility of each sample for each kernel */
 			HashMap<WeightedRule,double[]> incompatibilities = new HashMap<WeightedRule,double[]>();
 			/* Also compute the latent topic network log-loss of each sample -JF*/
 			double[] logLosses = new double[s.length];
-			
+
 			/* Saves original state */
 			double[] originalState = new double[rvBlocks[iBlock].length];
 			for (int iSave = 0; iSave < rvBlocks[iBlock].length; iSave++)
 				originalState[iSave] = rvBlocks[iBlock][iSave].getValue();
-			
+
 			/* Computes the probability */
 			for (GroundRule gk : incidentGKs[iBlock]) {
 				if (gk instanceof WeightedGroundRule) {
@@ -198,9 +198,9 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 						/* Changes the state of the block to the next point */
 						for (int iChange = 0; iChange < rvBlocks[iBlock].length; iChange++)
 							rvBlocks[iBlock][iChange].setValue(s[iSample][iChange]);
-						
+
 						inc[iSample] += ((WeightedGroundRule) gk).getIncompatibility();
-						
+
 						/* Compute the log loss terms for the block. -JF */
 						for (int iVar = 0; iVar < rvBlocks[iBlock].length; iVar++) {
 							if (rvBlocks[iBlock][iVar].getPredicate() != p) //only Theta or Phi
@@ -211,11 +211,11 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 					}
 				}
 			}
-			
+
 			/* Remember to return the block to its original state! */
 			for (int iChange = 0; iChange < rvBlocks[iBlock].length; iChange++)
 				rvBlocks[iBlock][iChange].setValue(originalState[iChange]);
-			
+
 			/* Compute the exp incomp and accumulate the partition for the current atom. */
 			HashMap<WeightedRule,Double> expIncAtom = new HashMap<WeightedRule,Double>();
 			double Z = 0.0;
@@ -242,15 +242,15 @@ public class LatentTopicNetworkMaxPseudoLikelihood_Naive extends VotedPerceptron
 					expIncAtom.put(k, val);
 				}
 			}
-			/* Finally, we add to the exp incomp for each kernel */ 
+			/* Finally, we add to the exp incomp for each kernel */
 			for (int i = 0; i < kernels.size(); i++) {
 				WeightedRule k = kernels.get(i);
 				if (expIncAtom.containsKey(k))
-					if (expIncAtom.get(k) > 0.0) 
+					if (expIncAtom.get(k) > 0.0)
 						expInc[i] += expIncAtom.get(k) / Z;
 			}
 		}
-	
+
 		return expInc;
 	}
 

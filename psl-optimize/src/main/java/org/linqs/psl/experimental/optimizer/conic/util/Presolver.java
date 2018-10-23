@@ -30,48 +30,48 @@ import cern.colt.matrix.tdouble.algo.decomposition.SparseDoubleQRDecomposition;
 
 /**
  * Utility methods for modifying a {@link ConicProgram}.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class Presolver {
-	
+
 	/**
 	 * Deletes any redundant constraints from a {@link ConicProgram}.
-	 * 
+	 *
 	 * @param program  the program to be modified
 	 */
 	public static void removeRedundantConstraints(ConicProgram program) {
 		final double tolerance = 10e-10;
-		
+
 		program.checkOutMatrices();
-		
+
 		Map<Integer, LinearConstraint> rowMap = invertLCMap(program.getLcMap());
 		List<LinearConstraint> toRemove = new LinkedList<LinearConstraint>();
-		
+
 		SparseDoubleQRDecomposition qr = new SparseDoubleQRDecomposition(program.getA(), 1);
 		int[] q = qr.getSymbolicAnalysis().q; /* Column permutations (since A is transposed) */
 		DoubleMatrix2D R = qr.getR();
-		
+
 		for (int i = 0; i < program.getNumLinearConstraints(); i++) {
 			if (Math.abs(R.get(i, i)) < tolerance)
 				toRemove.add(rowMap.get(q[i]));
 		}
-		
+
 		program.checkInMatrices();
-		
+
 		for (LinearConstraint lc : toRemove)
 			lc.delete();
 	}
-	
+
 	private static Map<Integer, LinearConstraint> invertLCMap(Map<LinearConstraint, Integer> map) {
 		Map<Integer, LinearConstraint> invertedMap = new HashMap<Integer, LinearConstraint>(map.size());
-		
+
 		for (Map.Entry<LinearConstraint, Integer> e : map.entrySet())
 			invertedMap.put(e.getValue(), e.getKey());
-		
+
 		if (map.size() != invertedMap.size())
 			throw new IllegalArgumentException("Map is not one-to-one.");
-		
+
 		return invertedMap;
 	}
 }

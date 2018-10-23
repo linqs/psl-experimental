@@ -25,7 +25,7 @@ import org.linqs.psl.model.rule.WeightedRule;
 /**
  * Ground log loss rules for LDA.  Keeps a pointer to an array of coefficients,
  * which may be updated.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  *
  */
@@ -35,7 +35,7 @@ public class LDAgroundLogLoss extends GroundLogLoss {
 		super(k, literals, coefficients);
 		this.coefficientsArray = coefficientsArray;
 	}
-	
+
 	public double[] getCoefficientsArray() {
 		return coefficientsArray;
 	}

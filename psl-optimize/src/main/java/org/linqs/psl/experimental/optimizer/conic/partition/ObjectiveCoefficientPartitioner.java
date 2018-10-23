@@ -129,7 +129,7 @@ public class ObjectiveCoefficientPartitioner {
 
 				for (List<Node> block : graphPartition){
 					if (block.size() > 2*(totalSize - block.size())) {
-	//						log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
+							// log.debug("{} > {}", block.size(), 2*(totalSize - block.size()));
 						balanced = false;
 					}
 					if (!balanced) {

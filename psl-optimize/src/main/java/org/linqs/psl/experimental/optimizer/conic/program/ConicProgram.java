@@ -38,23 +38,23 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Stores information about the primal and dual forms of a conic program.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class ConicProgram {
-	
+
 	private Set<NonNegativeOrthantCone> NNOCs;
 	private Set<SecondOrderCone> SOCs;
 	private Set<RotatedSecondOrderCone> RSOCs;
-	
+
 	private int numVars;
-	
+
 	private Set<LinearConstraint> cons;
-	
+
 	private boolean checkedOut;
-	
+
 	private Set<ConicProgramListener> listeners;
-	
+
 	private SparseCCDoubleMatrix2D A;
 	private DenseDoubleMatrix1D x;
 	private DenseDoubleMatrix1D b;
@@ -63,33 +63,33 @@ public class ConicProgram {
 	private DenseDoubleMatrix1D c;
 	private Map<Variable, Integer> varMap;
 	private Map<LinearConstraint, Integer> lcMap;
-	
+
 	private int nextID;
-	
+
 	// Error messages
 	private static final String UNEXPECTED_SENDER = "Unexpected sender type.";
 	private static final String UNEXPECTED_DATA = "Unexpected data.";
-	
+
 	public ConicProgram() {
 		NNOCs = new HashSet<NonNegativeOrthantCone>();
 		SOCs = new HashSet<SecondOrderCone>();
 		RSOCs = new HashSet<RotatedSecondOrderCone>();
-		
+
 		numVars = 0;
-		
+
 		cons = new HashSet<LinearConstraint>();
-		
+
 		checkedOut = false;
-		
+
 		listeners = new HashSet<ConicProgramListener>();
-		
+
 		nextID = 0;
 	}
-	
+
 	int getNextID() {
 		return nextID++;
 	}
-	
+
 	public Collection<ConeType> getConeTypes() {
 		Set<ConeType> types = new HashSet<ConeType>();
 		if (getNumNNOC() > 0) types.add(ConeType.NonNegativeOrthantCone);
@@ -97,57 +97,57 @@ public class ConicProgram {
 		if (getNumRSOC() > 0) types.add(ConeType.RotatedSecondOrderCone);
 		return types;
 	}
-	
+
 	public NonNegativeOrthantCone createNonNegativeOrthantCone() {
 		verifyCheckedIn();
 		return new NonNegativeOrthantCone(this);
 	}
-	
+
 	public Set<NonNegativeOrthantCone> getNonNegativeOrthantCones() {
 		return Collections.unmodifiableSet(NNOCs);
 	}
-	
+
 	public SecondOrderCone createSecondOrderCone(int n) {
 		verifyCheckedIn();
 		return new SecondOrderCone(this, n);
 	}
-	
+
 	public Set<SecondOrderCone> getSecondOrderCones() {
 		return Collections.unmodifiableSet(SOCs);
 	}
-	
+
 	public RotatedSecondOrderCone createRotatedSecondOrderCone(int n) {
 		verifyCheckedIn();
 		return new RotatedSecondOrderCone(this, n);
 	}
-	
+
 	public Set<RotatedSecondOrderCone> getRotatedSecondOrderCones() {
 		return Collections.unmodifiableSet(RSOCs);
 	}
-	
+
 	public Set<Cone> getCones() {
 		return ImmutableSet.<Cone>builder().addAll(NNOCs).addAll(SOCs).addAll(RSOCs).build();
 	}
-	
+
 	public LinearConstraint createConstraint() {
 		verifyCheckedIn();
 		return new LinearConstraint(this);
 	}
-	
+
 	public Set<LinearConstraint> getConstraints() {
 		return new HashSet<LinearConstraint>(this.cons);
 	}
-	
+
 	public void checkOutMatrices() {
 		verifyCheckedIn();
 		Variable var;
 		int i, j;
 		varMap = new HashMap<Variable, Integer>();
 		lcMap = new HashMap<LinearConstraint, Integer>();
-		
+
 		/* Collects variables */
 		i = 0;
-		
+
 		/* NNOCs */
 		for (NonNegativeOrthantCone cone : NNOCs) {
 			var = cone.getVariable();
@@ -155,26 +155,26 @@ public class ConicProgram {
 				varMap.put(var, i++);
 			}
 		}
-		
+
 		/* SOCs */
 		for (SecondOrderCone cone : SOCs)
 			for (Variable v : cone.getVariables())
 				if (!varMap.containsKey(v))
 					varMap.put(v, i++);
-		
+
 		/* RSOCs */
 		for (RotatedSecondOrderCone cone : RSOCs)
 			for (Variable v : cone.getVariables())
 				if (!varMap.containsKey(v))
 					varMap.put(v, i++);
-		
+
 		/* Collects linear constraints */
 		j = 0;
 		for (LinearConstraint con : cons)
 			if (!lcMap.containsKey(con))
 				lcMap.put((LinearConstraint) con, j++);
-				
-		
+
+
 		/* Initializes data matrices */
 		SparseDoubleMatrix2D Atemp = new SparseDoubleMatrix2D(lcMap.size(), varMap.size(), lcMap.size()*4, 0.2, 0.5);
 		x = new DenseDoubleMatrix1D(varMap.size());
@@ -182,7 +182,7 @@ public class ConicProgram {
 		w = new DenseDoubleMatrix1D(lcMap.size());
 		s = new DenseDoubleMatrix1D(varMap.size());
 		c = new DenseDoubleMatrix1D(varMap.size());
-		
+
 		/* Constructs A, b, and w */
 		for (Map.Entry<LinearConstraint, Integer> lc : lcMap.entrySet()) {
 			for (Entry<Variable, Double> v : lc.getKey().getVariables().entrySet()) {
@@ -191,24 +191,24 @@ public class ConicProgram {
 			w.set(lc.getValue(), lc.getKey().getLagrange());
 			b.set(lc.getValue(), lc.getKey().getConstrainedValue());
 		}
-		
+
 		if (Atemp.rows() > 0)
 			A = Atemp.getColumnCompressed(false);
 		else
 			A = new SparseCCDoubleMatrix2D(0, 0);
-		
+
 		/* Constructs x, s, and c */
 		for (Map.Entry<Variable, Integer> v : varMap.entrySet()) {
 			x.set(v.getValue(), v.getKey().getValue());
 			s.set(v.getValue(), v.getKey().getDualValue());
 			c.set(v.getValue(), v.getKey().getObjectiveCoefficient());
 		}
-		
+
 		checkedOut = true;
-		
+
 		notify(ConicProgramEvent.MatricesCheckedOut, null, (Object[]) null);
 	}
-	
+
 	public void checkInMatrices() {
 		verifyCheckedOut();
 		for (Map.Entry<Variable, Integer> v : varMap.entrySet()) {
@@ -218,94 +218,94 @@ public class ConicProgram {
 		for (Map.Entry<LinearConstraint, Integer> lc : lcMap.entrySet())
 			lc.getKey().setLagrange(w.get(lc.getValue()));
 		checkedOut = false;
-				
+
 		notify(ConicProgramEvent.MatricesCheckedIn, null, (Object[]) null);
 	}
-	
+
 	public Map<Variable, Integer> getVarMap() {
 		verifyCheckedOut();
 		return Collections.unmodifiableMap(varMap);
 	}
-	
+
 	public Map<LinearConstraint, Integer> getLcMap() {
 		verifyCheckedOut();
 		return Collections.unmodifiableMap(lcMap);
 	}
-	
+
 	public SparseCCDoubleMatrix2D getA() {
 		verifyCheckedOut();
 		return A;
 	}
-	
+
 	public DenseDoubleMatrix1D getX() {
 		verifyCheckedOut();
 		return x;
 	}
-	
+
 	public DenseDoubleMatrix1D getB() {
 		verifyCheckedOut();
 		return b;
 	}
-	
+
 	public DenseDoubleMatrix1D getW() {
 		verifyCheckedOut();
 		return w;
 	}
-	
+
 	public DenseDoubleMatrix1D getS() {
 		verifyCheckedOut();
 		return s;
 	}
-	
+
 	public DenseDoubleMatrix1D getC() {
 		verifyCheckedOut();
 		return c;
 	}
-	
+
 	public int getIndex(Variable v) {
 		verifyCheckedOut();
 		return varMap.get(v);
 	}
-	
+
 	public int getIndex(LinearConstraint lc) {
 		verifyCheckedOut();
 		return lcMap.get(lc);
 	}
-	
+
 	public int getNumCones() {
 		return getNumNNOC() + gtNumSOC() + getNumRSOC();
 	}
-	
+
 	public int getNumNNOC() {
 		return NNOCs.size();
 	}
-	
+
 	public int gtNumSOC() {
 		return SOCs.size();
 	}
-	
+
 	public int getNumRSOC() {
 		return RSOCs.size();
 	}
-	
+
 	public int getNumVariables() {
 		return numVars;
 	}
-	
+
 	public int getNumLinearConstraints() {
 		return cons.size();
 	}
-	
+
 	public void verifyCheckedOut() {
 		if (!checkedOut)
 			throw new IllegalStateException("Matrices are not checked out.");
 	}
-	
+
 	public void verifyCheckedIn() {
 		if (checkedOut)
 			throw new IllegalStateException("Matrices are not checked in.");
 	}
-	
+
 	public void trimUnrestrictedVariablePairs() {
 		boolean checkInWhenFinished = false;
 		if (!checkedOut) {
@@ -359,88 +359,88 @@ public class ConicProgram {
 			}
 			else trim = false;
 		}
-		
+
 		if (checkInWhenFinished) checkInMatrices();
 	}
-	
+
 	public double getPrimalInfeasibility() {
 		return getPrimalInfeasibility(false);
 	}
-	
+
 	public double getPrimalInfeasibility(boolean requireInterior) {
 		verifyCheckedOut();
-		
+
 		double value;
-		
+
 		for (NonNegativeOrthantCone cone : NNOCs) {
 			value = x.get(getIndex(cone.getVariable()));
 			if (value < 0.0 || (requireInterior && value == 0.0))
 				return Double.POSITIVE_INFINITY;
 		}
-		
+
 		for (SecondOrderCone cone : SOCs) {
 			value = 0.0;
 			for (Variable v : cone.getVariables()) {
 				if (!v.equals(cone.getNthVariable())) {
 					value += Math.pow(x.get(getIndex(v)), 2);
-				} 
+				}
 			}
 			value = Math.sqrt(value);
 			value = x.get(getIndex(cone.getNthVariable())) - value;
 			if (value < 0.0 || (requireInterior && value == 0.0))
 				return Double.POSITIVE_INFINITY;
 		}
-		
+
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
-		
+
 		double inf = alg.norm2(alg.mult(A, x).assign(b, DoubleFunctions.minus));
-		
+
 		return inf;
 	}
-	
+
 	public double getDualInfeasibility() {
 		return getDualInfeasibility(false);
 	}
-	
+
 	public double getDualInfeasibility(boolean requireInterior) {
 		verifyCheckedOut();
-		
+
 		double value;
-		
+
 		for (NonNegativeOrthantCone cone : NNOCs) {
 			value = s.get(getIndex(cone.getVariable()));
 			if (value < 0.0 || (requireInterior && value == 0.0))
 				return Double.POSITIVE_INFINITY;
 		}
-		
+
 		for (SecondOrderCone cone : SOCs) {
 			value = 0.0;
 			for (Variable v : cone.getVariables()) {
 				if (!v.equals(cone.getNthVariable())) {
 					value += Math.pow(s.get(getIndex(v)), 2);
-				} 
+				}
 			}
 			value = Math.sqrt(value);
 			value = s.get(getIndex(cone.getNthVariable())) - value;
 			if (value < 0.0 || (requireInterior && value == 0.0))
 				return Double.POSITIVE_INFINITY;
 		}
-		
+
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
-		
+
 		double inf = alg.norm2(A.zMult(w, s.copy(), 1.0, 1.0, true).assign(c, DoubleFunctions.minus));
-		
+
 		return inf;
 	}
-	
+
 	public void registerForConicProgramEvents(ConicProgramListener l) {
 		listeners.add(l);
 	}
-	
+
 	public void unregisterForConicProgramEvents(ConicProgramListener l) {
 		listeners.remove(l);
 	}
-	
+
 	void notify(ConicProgramEvent e, Entity sender, Object... data) {
 		switch (e) {
 		case NNOCCreated:
@@ -530,7 +530,7 @@ public class ConicProgram {
 				throw new IllegalArgumentException(UNEXPECTED_SENDER);
 			break;
 		}
-		
+
 		for (ConicProgramListener l : listeners)
 			l.notify(this, e, sender, data);
 	}

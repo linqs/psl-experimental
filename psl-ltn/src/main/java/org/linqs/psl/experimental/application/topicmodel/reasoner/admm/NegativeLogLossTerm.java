@@ -24,14 +24,14 @@ import org.linqs.psl.reasoner.admm.WeightedObjectiveTerm;
 /**
  * {@link ADMMReasoner} objective term of the form <br />
  * weight * coeffs^T * -log(x)
- * 
+ *
  * @author Jimmy Foulds <jrfoulds@gmail.com>
  */
 public class NegativeLogLossTerm extends ADMMObjectiveTerm implements WeightedObjectiveTerm {
-	
+
 	private final double[] coeffs;
 	private double weight;
-	
+
 	NegativeLogLossTerm(ADMMReasoner reasoner, int[] zIndices, double[] coeffs, double weight) {
 		super(reasoner, zIndices);
 		this.coeffs = coeffs;
@@ -42,7 +42,7 @@ public class NegativeLogLossTerm extends ADMMObjectiveTerm implements WeightedOb
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
-	
+
 	@Override
 	protected void minimize() {
 		double a, b, c, sol1, sol2;
@@ -62,7 +62,7 @@ public class NegativeLogLossTerm extends ADMMObjectiveTerm implements WeightedOb
 			x[i] = Math.max(sol1, sol2); //This should be equivalent but hopefully faster
 		}
 	}
-	
+
 	public double initAsDirichlet() {
 		double coefficientSum = 0;
 		assert (x.length == coeffs.length);
@@ -73,7 +73,7 @@ public class NegativeLogLossTerm extends ADMMObjectiveTerm implements WeightedOb
 			x[i] = coeffs[i] / coefficientSum;
 			y[i] = coefficientSum;
 		}
-		
+
 		return coefficientSum;
 	}
 }

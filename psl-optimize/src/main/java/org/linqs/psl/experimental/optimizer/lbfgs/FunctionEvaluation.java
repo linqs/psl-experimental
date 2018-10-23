@@ -20,5 +20,5 @@ package org.linqs.psl.experimental.optimizer.lbfgs;
 public interface FunctionEvaluation {
 
 	public double evaluateFunction(double[] weights, double[] gradient, double[][] hessian);
-	
+
 }

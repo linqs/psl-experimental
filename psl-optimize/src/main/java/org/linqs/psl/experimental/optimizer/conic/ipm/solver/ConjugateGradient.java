@@ -38,18 +38,18 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Solves normal systems using a conjugate gradient method.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class ConjugateGradient implements NormalSystemSolver {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(ConjugateGradient.class);
-	
+
 	/**
 	 * Prefix of property keys used by this class.
 	 */
 	public static final String CONFIG_PREFIX = "cgsolver";
-	
+
 	/**
 	 * Key for integer property. The ConjugateGradient solver will throw an
 	 * exception if the conjugate gradient solver completes this many iterations
@@ -58,7 +58,7 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final String CG_MAX_ITER_KEY = CONFIG_PREFIX + ".maxcgiter";
 	/** Default value for CG_MAX_ITER_KEY property */
 	public static final int CG_MAX_ITER_DEFAULT = 1000000;
-	
+
 	/**
 	 * Key for double property. The ConjugateGradient solver will terminate
 	 * as converged if the residual is less than this value times the
@@ -67,7 +67,7 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final String CG_REL_TOL_KEY = CONFIG_PREFIX + ".cgreltol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_REL_TOL_DEFAULT = 10e-10;
-	
+
 	/**
 	 * Key for double property. The ConjugateGradient solver will terminate
 	 * as converged if the residual is less than this value.
@@ -75,7 +75,7 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final String CG_ABS_TOL_KEY = CONFIG_PREFIX + ".cgabstol";
 	/** Default value for CG_REL_TOL_KEY property */
 	public static final double CG_ABS_TOL_DEFAULT = 10e-50;
-	
+
 	/**
 	 * Key for double property. The ConjugateGradient solver will throw an
 	 * exception if the conjugate graident solver reaches an iterate
@@ -84,42 +84,42 @@ public class ConjugateGradient implements NormalSystemSolver {
 	public static final String CG_DIV_TOL_KEY = CONFIG_PREFIX + ".cgdivtol";
 	/** Default value for CG_DIV_TOL_KEY property */
 	public static final double CG_DIV_TOL_DEFAULT = 10e5;
-	
+
 	/**
 	 * Should be set to a {@link PreconditionerFactory} or the fully qualified
 	 * name of one. Will be used to instantiate a {@link DoublePreconditioner}.
 	 */
 	public static final String PRECONDITIONER_KEY = CONFIG_PREFIX + ".preconditioner";
 	public static final String PRECONDITIONER_DEFAULT = "org.linqs.psl.experimental.optimizer.conic.ipm.solver.preconditioner.IdentityPreconditionerFactory";
-	
+
 	private final int maxIter;
 	private final double relTol;
 	private final double absTol;
 	private final double divTol;
 	private final PreconditionerFactory preconditionerFactory;
-	
+
 	private DoubleCG cg;
 	private DoublePreconditioner preconditioner;
 	private DoubleIterationMonitor monitor;
 	private DoubleMatrix2D A;
 	private DoubleMatrix1D x;
-	
+
 	public ConjugateGradient() {
 		maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
 		relTol  = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
 		absTol  = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
 		divTol  = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
-		
+
 		preconditionerFactory = (PreconditionerFactory)Config.getNewObject(PRECONDITIONER_KEY, PRECONDITIONER_DEFAULT);
-		
+
 		monitor = new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol);
 		monitor.setIterationReporter(new DoubleIterationReporter() {
-			
+
 			@Override
 			public void monitor(double r, DoubleMatrix1D x, int i) {
 				monitor(r, i);
 			}
-			
+
 			@Override
 			public void monitor(double r, int i) {
 				if (i % 50 == 0)

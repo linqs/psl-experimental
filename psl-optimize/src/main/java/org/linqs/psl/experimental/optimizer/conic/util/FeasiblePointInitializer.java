@@ -53,25 +53,25 @@ import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import cern.jet.math.tdouble.DoubleFunctions;
 
 public class FeasiblePointInitializer implements ConicProgramListener {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(FeasiblePointInitializer.class);
-	
+
 	private final ConicProgram program;
-	
+
 	private Set<LinearConstraint> primalInfeasible;
 	private Set<Variable> dualInfeasible;
 	private Map<LinearConstraint, IsolatedStructure> primalIsolated;
 	private Map<Variable, LinearConstraint> dualIsolated;
-	
+
 	private boolean madePrimalFeasibleOnce;
 	private boolean madeDualFeasibleOnce;
-	
+
 	private static final ArrayList<ConeType> supportedCones = new ArrayList<ConeType>(2);
 	static {
 		supportedCones.add(ConeType.NonNegativeOrthantCone);
 		supportedCones.add(ConeType.SecondOrderCone);
 	}
-	
+
 	// Error messages
 	private static final String UNEXPECTED_SENDER = "Unexpected sender type.";
 	private static final String UNEXPECTED_DATA = "Unexpected data.";
@@ -79,20 +79,20 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 	public FeasiblePointInitializer(ConicProgram p) {
 		program = p;
 		program.registerForConicProgramEvents(this);
-		
+
 		primalInfeasible = new HashSet<LinearConstraint>();
 		dualInfeasible = new HashSet<Variable>();
 		primalIsolated = new HashMap<LinearConstraint, FeasiblePointInitializer.IsolatedStructure>();
 		dualIsolated = new HashMap<Variable, LinearConstraint>();
-		
+
 		madePrimalFeasibleOnce = false;
 		madeDualFeasibleOnce = false;
 	}
-	
+
 	public static boolean supportsConeTypes(Collection<ConeType> types) {
 		return supportedCones.containsAll(types);
 	}
-	
+
 	@Override
 	public void notify(ConicProgram sender, ConicProgramEvent event, Entity entity, Object... data) {
 		switch (event) {
@@ -195,18 +195,18 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		makePrimalFeasible();
 		makeDualFeasible();
 	}
-	
+
 	public void makePrimalFeasible() {
 		if (!supportsConeTypes(program.getConeTypes()))
 			throw new IllegalStateException("Unsupported cone type.");
-		
+
 		LinearConstraint lc;
 		IsolatedStructure iso;
 		Map<LinearConstraint, Integer> lcInit = new HashMap<LinearConstraint, Integer>();
 		Map<Variable, Integer> varInit = new HashMap<Variable, Integer>();
-		
+
 		final Set<IsolatedStructure> isoNeedsInit = new HashSet<IsolatedStructure>();
-		
+
 		LinearConstraintTraversal trav = new LinearConstraintTraversal(new LinearConstraintTraversalEvaluator() {
 			@Override
 			public boolean next(LinearConstraint con) {
@@ -228,12 +228,12 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		DenseDoubleLUDecompositionQuick lu = new DenseDoubleLUDecompositionQuick();
 		Set<Cone> cones = new HashSet<Cone>();
 		Cone cone;
-		
+
 		if (!madePrimalFeasibleOnce)
 			 primalInfeasible.addAll(program.getConstraints());
-		
+
 		log.debug("Finding primal feasible point: {} constraints marked", primalInfeasible.size());
-		
+
 		while (!primalInfeasible.isEmpty()) {
 			log.trace("{} primal constraints left to initialize.", primalInfeasible.size());
 			lc = primalInfeasible.iterator().next();
@@ -249,14 +249,14 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				varInit.clear();
 				cones.clear();
 				itr = trav.traverse(lc);
-				
+
 				/* Collects linear constraints to be initialized */
 				while (itr.hasNext()) {
 					lc = itr.next();
 					primalInfeasible.remove(lc);
 					lcInit.put(lc, i++);
 				}
-				
+
 				/* Collects variables to be initialized */
 				for (LinearConstraint con : lcInit.keySet()) {
 					for (Variable v : con.getVariables().keySet()) {
@@ -273,11 +273,11 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 						}
 					}
 				}
-				
+
 				/* Initializes data matrices */
 				A = (SparseDoubleMatrix2D) DoubleFactory2D.sparse.make(lcInit.size(), varInit.size());
 				x = DoubleFactory1D.dense.make(varInit.size());
-				
+
 				/* Constructs A, b, and AstarA */
 				for (Map.Entry<LinearConstraint, Integer> con : lcInit.entrySet()) {
 					for (Entry<Variable, Double> v : con.getKey().getVariables().entrySet()) {
@@ -292,11 +292,11 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 					}
 					x.set(con.getValue(), con.getKey().getConstrainedValue());
 				}
-				
+
 				/* Uses decomposition to find particular solution to Ax = b */
 				SparseDoubleQRDecomposition qr = new SparseDoubleQRDecomposition(A.getColumnCompressed(false), 0);
 				qr.solve(x);
-				
+
 				/*
 				 * If the particular solution is not in the interior of the cones, uses a decomposition
 				 * to find the general solution to Ax = b and moves through the solution space until an
@@ -305,10 +305,10 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				if (!isInterior(cones, x, varInit)) {
 					DenseDoubleQRDecomposition denseQR = new DenseDoubleQRDecomposition(new DenseDoubleMatrix2D(A.rows(), A.columns()).assign(A).viewDice());
 					nullity = denseQR.getQ(false).viewPart(0, A.rows(), A.columns(), A.columns()-A.rows());
-					
+
 					lu.decompose(nullity.zMult(nullity, null, 1.0, 0.0, true, false));
 					intDir = x.copy();
-					
+
 					// TODO: Add check for getting stuck
 					do {
 						for (Cone c : cones) {
@@ -325,26 +325,26 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 					program.getX().set(program.getIndex(v.getKey()), x.get(v.getValue()));
 			}
 		}
-		
+
 		/* Initializes the isolated structures */
 		for (IsolatedStructure toInit : isoNeedsInit) {
 			toInit.makePrimalFeasible();
 		}
-		
+
 		madePrimalFeasibleOnce = true;
 	}
-	
+
 	public void makeDualFeasible() {
 		if (!supportsConeTypes(program.getConeTypes()))
 			throw new IllegalStateException("Unsupported cone type.");
-		
+
 		Variable var;
 		LinearConstraint iso;
 		Map<LinearConstraint, Integer> lcInit = new HashMap<LinearConstraint, Integer>();
 		Map<Variable, Integer> varInit = new HashMap<Variable, Integer>();
-		
+
 		final Set<LinearConstraint> isoNeedsInit = new HashSet<LinearConstraint>();
-		
+
 		VariableTraversal trav = new VariableTraversal((new VariableTraversalEvaluator() {
 			@Override
 			public boolean next(Variable var) {
@@ -356,7 +356,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				else
 					return true;
 			}
-			
+
 		}));
 
 		int i,j;
@@ -367,7 +367,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		DenseDoubleLUDecompositionQuick lu = new DenseDoubleLUDecompositionQuick();
 		Set<Cone> cones = new HashSet<Cone>();
 		Cone cone;
-		
+
 		if (!madeDualFeasibleOnce) {
 			for (Cone cone2 : program.getCones()) {
 				if (cone2 instanceof NonNegativeOrthantCone) {
@@ -382,7 +382,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		}
 
 		log.debug("Finding dual feasible point: {} constraints marked.", dualInfeasible.size());
-		
+
 		while (!dualInfeasible.isEmpty()) {
 			log.trace("{} dual constraints left to initialize.", dualInfeasible.size());
 			var = dualInfeasible.iterator().next();
@@ -399,7 +399,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				j = 0;
 				lcInit.clear();
 				itr = trav.traverse(var);
-				
+
 				/* Collects variables to be initialized */
 				while (itr.hasNext()) {
 					var = itr.next();
@@ -417,7 +417,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 						}
 					}
 				}
-			
+
 				/* Collects linear constraints to be initialized */
 				for (Variable v : varInit.keySet()) {
 					for (LinearConstraint lc : v.getLinearConstraints()) {
@@ -426,14 +426,14 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 						}
 					}
 				}
-				
+
 				/* Initializes data matrices */
 				A = DoubleFactory2D.sparse.make(lcInit.size(), varInit.size());
 				w = DoubleFactory1D.dense.make(lcInit.size());
 				s = DoubleFactory1D.dense.make(varInit.size());
 				c = DoubleFactory1D.dense.make(varInit.size());
 				r = DoubleFactory1D.dense.make(varInit.size());
-				
+
 				/* Constructs A and w */
 				for (Map.Entry<LinearConstraint, Integer> lc : lcInit.entrySet()) {
 					for (Map.Entry<Variable, Double> v : lc.getKey().getVariables().entrySet()) {
@@ -443,9 +443,9 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 					}
 					w.set(lc.getValue(), lc.getKey().getLagrange());
 				}
-				
+
 				lu.decompose(alg.mult(A, A.viewDice()));
-				
+
 				/* Constructs s and c */
 				for (Map.Entry<Variable, Integer> v : varInit.entrySet()) {
 					s.set(v.getValue(), v.getKey().getDualValue());
@@ -455,10 +455,10 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 							temp += lc.getVariables().get(v.getKey()) * lc.getLagrange();
 					c.set(v.getValue(), v.getKey().getObjectiveCoefficient() - temp);
 				}
-				
+
 				/* Initializes r */
 				r = alg.mult(A.viewDice(), w).assign(s, DoubleFunctions.plus).assign(c, DoubleFunctions.minus);
-				
+
 				int step = 0;
 				DoubleMatrix1D intDir = s.copy();
 				// TODO: Add check for getting stuck
@@ -475,21 +475,21 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 					}
 					else {
 						step = 0;
-						
+
 						for (Cone cone2 : cones) {
 							((Cone) cone2).setInteriorDirection(varInit, s, intDir);
 						}
-						
+
 						dw = alg.mult(A, intDir);
 						lu.solve(dw);
 						w.assign(dw, DoubleFunctions.minus);
 						A.zMult(dw, intDir, 1.0, 0.0, true);
 						s.assign(intDir, DoubleFunctions.plus);
 					}
-					
+
 					r = alg.mult(A.viewDice(), w).assign(s, DoubleFunctions.plus).assign(c, DoubleFunctions.minus);
 				}
-				
+
 				/* Finalizes initialization */
 				for (Map.Entry<Variable, Integer> v : varInit.entrySet()) {
 					program.getS().set(program.getIndex(v.getKey()), s.get(v.getValue()));
@@ -498,10 +498,10 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 					program.getW().set(program.getIndex(lc.getKey()), w.get(lc.getValue()));
 			}
 		}
-		
+
 		for (LinearConstraint con : isoNeedsInit)
 			makeDualFeasible(con);
-		
+
 		madeDualFeasibleOnce = true;
 	}
 
@@ -509,10 +509,10 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		DoubleMatrix1D w = program.getW();
 		DoubleMatrix1D s = program.getS();
 		DoubleMatrix1D c = program.getC();
-		
+
 		double gap;
 		double maxGap = 0.0;
-		
+
 		for (Map.Entry<Variable, Double> e : lc.getVariables().entrySet()) {
 			gap = 0.0;
 			for (LinearConstraint con : e.getKey().getLinearConstraints()) {
@@ -523,12 +523,12 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 			if (gap > maxGap)
 				maxGap = gap;
 		}
-		
+
 		if (lc.getVariables().values().iterator().next() < 0.0)
 			maxGap *= -1;
-		
+
 		w.set(program.getIndex(lc), w.get(program.getIndex(lc)) - maxGap);
-		
+
 		for (Map.Entry<Variable, Double> e : lc.getVariables().entrySet()) {
 			gap = 0.0;
 			for (LinearConstraint con : e.getKey().getLinearConstraints()) {
@@ -543,9 +543,9 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		IsolatedStructure iso = primalIsolated.get(lc);
 		if (iso != null)
 			return iso;
-		
+
 		/* Checks for linear isolated structure */
-		Variable	positiveSlack = null,
+		Variable positiveSlack = null,
 					negativeSlack = null;
 		for (Entry<Variable, Double> e : lc.getVariables().entrySet()) {
 			if (e.getKey().getLinearConstraints().size() == 1
@@ -562,18 +562,18 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				}
 			}
 		}
-		
+
 		if (positiveSlack != null && negativeSlack != null) {
 			iso = new LinearIsolatedStructure(lc, positiveSlack, negativeSlack);
 			primalIsolated.put(lc, iso);
 			return iso;
 		}
-		
+
 		/* If execution reaches this line, then no isolated structure could be found */
-		
+
 		return null;
 	}
-	
+
 	private LinearConstraint getDualIsolatedConstraint(Variable v) {
 		LinearConstraint lc = dualIsolated.get(v);
 		if (lc != null)
@@ -584,7 +584,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 			isolated = true;
 			posCoeff = (con.getVariables().get(v) > 0.0) ? true : false;
 			for (Map.Entry<Variable, Double> e : con.getVariables().entrySet()) {
-				isolated = isolated 
+				isolated = isolated
 						&& (((posCoeff && e.getValue() > 0.0) ? true : false) || ((!posCoeff && e.getValue() < 0.0)))
 						&& e.getKey().getCone() instanceof NonNegativeOrthantCone;
 			}
@@ -595,7 +595,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		}
 		return null;
 	}
-	
+
 	private boolean isInterior(Set<Cone> cones, DoubleMatrix1D x, Map<Variable, Integer> varInit) {
 		for (Cone cone : cones) {
 			if (cone instanceof NonNegativeOrthantCone) {
@@ -608,7 +608,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				for (Variable v : ((SecondOrderCone) cone).getVariables()) {
 					if (!v.equals(((SecondOrderCone) cone).getNthVariable())) {
 						value += Math.pow(x.get(varInit.get(v)), 2);
-					} 
+					}
 				}
 				value = Math.sqrt(value);
 				value = x.get(varInit.get(((SecondOrderCone) cone).getNthVariable())) - value;
@@ -619,14 +619,14 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 			else
 				throw new IllegalStateException();
 		}
-		
+
 		return true;
 	}
-	
+
 	abstract private class IsolatedStructure {
 		abstract void makePrimalFeasible();
 	}
-	
+
 	private class LinearIsolatedStructure extends IsolatedStructure {
 		private LinearConstraint lc;
 		private Variable positiveSlack;
@@ -661,12 +661,12 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 			}
 		}
 	}
-	
+
 	private interface LinearConstraintTraversalEvaluator extends TraversalEvaluator<LinearConstraint> { }
-	
+
 	private class LinearConstraintTraversal extends Traversal<LinearConstraint> {
 		private Set<Variable> vars;
-		
+
 		private LinearConstraintTraversal(LinearConstraintTraversalEvaluator e) {
 			super(e);
 			vars = new HashSet<Variable>();
@@ -676,7 +676,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		Set<LinearConstraint> getNeighbors(LinearConstraint ego) {
 			Cone cone;
 			Set<LinearConstraint> neighbors = new HashSet<LinearConstraint>();
-			
+
 			for (Variable v : ego.getVariables().keySet()) {
 				cone = v.getCone();
 				if (cone instanceof NonNegativeOrthantCone) {
@@ -688,23 +688,23 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 				else
 					throw new IllegalStateException();
 			}
-			
+
 			for (Variable v : vars) {
 				for (LinearConstraint con : v.getLinearConstraints()) {
 					neighbors.add(con);
 				}
 			}
-			
+
 			vars.clear();
-			
+
 			neighbors.remove(ego);
-			
+
 			return neighbors;
 		}
 	}
-	
-	private interface VariableTraversalEvaluator extends TraversalEvaluator<Variable> {	}
-	
+
+	private interface VariableTraversalEvaluator extends TraversalEvaluator<Variable> {}
+
 	private class VariableTraversal extends Traversal<Variable> {
 		private VariableTraversal(VariableTraversalEvaluator e) {
 			super(e);
@@ -714,7 +714,7 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 		Set<Variable> getNeighbors(Variable ego) {
 			Cone cone;
 			Set<Variable> neighbors = new HashSet<Variable>();
-			
+
 			for (LinearConstraint con : ego.getLinearConstraints()) {
 				for (Variable v : con.getVariables().keySet()) {
 					cone = v.getCone();
@@ -728,36 +728,36 @@ public class FeasiblePointInitializer implements ConicProgramListener {
 						throw new IllegalStateException();
 				}
 			}
-			
+
 			neighbors.remove(ego);
-			
+
 			return neighbors;
 		}
 	}
-	
+
 	private interface TraversalEvaluator<T> {
 		public boolean next(T n);
 	}
-	
+
 	abstract private class Traversal<T> {
 		private Stack<T> stack;
 		private Set<T> closedSet;
 		private TraversalEvaluator<T> eval;
-		
+
 		private Traversal(TraversalEvaluator<T> e) {
 			stack = new Stack<T>();
 			closedSet = new HashSet<T>();
 			eval = e;
 		}
-		
+
 		abstract Set<T> getNeighbors(T ego);
-		
+
 		Iterator<T> traverse(T origin) {
 			if (!stack.empty())
 				throw new IllegalStateException("Did not finish previous traversal.");
-			
+
 			closedSet.clear();
-			
+
 			if (eval.next(origin)) {
 				stack.push(origin);
 				closedSet.add(origin);
