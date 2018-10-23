@@ -34,72 +34,72 @@ import org.linqs.psl.experimental.datasplitter.splitstep.SplitStep;
  * Utility for splitting data sets.
  * <p>
  * Can be parameterized with strategies.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class DataSplitter {
-	private final Random rand;
-	private SplitStep splitStep;
-	private List<ClosureStep> closureSteps;
-	private BuildDBStep buildDBStep;
-	private DataSplitter subsplitter;
-	
-	public DataSplitter(long seed) {
-		rand = new Random(seed);
-		splitStep = null;
-		closureSteps = new ArrayList<ClosureStep>();
-		buildDBStep = null;
-		subsplitter = null;
-	}
-	
-	public void setSplitStep(SplitStep splitStep) {
-		this.splitStep = splitStep;
-	}
-	
-	public void addClosureStep(ClosureStep closureStep) {
-		closureSteps.add(closureStep);
-	}
-	
-	public void clearClosureSteps() {
-		closureSteps.clear();
-	}
-	
-	public void setBuildDBStep(BuildDBStep buildDBStep) {
-		this.buildDBStep = buildDBStep;
-	}
-	
-	public void setSubsplitter(DataSplitter subsplitter) {
-		this.subsplitter = subsplitter;
-	}
-	
-	public ExperimentTree split(Database db) {
-		if (splitStep == null)
-			throw new IllegalStateException("No SplitStep has been set.");
-		if (closureSteps.size() == 0)
-			throw new IllegalStateException("No ClosureStep has been set.");
-		if (buildDBStep == null)
-			throw new IllegalStateException("No BuildDBStep has been set.");
-		
-		List<Collection<Partition>> partitionGroups = splitStep.getSplits(db, rand);
-		for (ClosureStep closureStep : closureSteps)
-			closureStep.doClosure(db, partitionGroups);
-		List<DBDefinition> dbDefs = buildDBStep.getDatabaseDefinitions(db, partitionGroups);
-		
-		ExperimentTree tree = new ExperimentTree();
-		
-		if (subsplitter != null) {
-			DataStore ds = db.getDataStore();
-			for (DBDefinition dbDef : dbDefs) {
-				Database subDB = ds.getDatabase(dbDef.write, dbDef.toClose, dbDef.read);
-				tree.addChild(subsplitter.split(subDB));
-				subDB.close();
-			}
-		}
-		else {
-			for (DBDefinition dbDef : dbDefs)
-				tree.addChild(new ExperimentTree(dbDef));
-		}
-		
-		return tree;
-	}
+    private final Random rand;
+    private SplitStep splitStep;
+    private List<ClosureStep> closureSteps;
+    private BuildDBStep buildDBStep;
+    private DataSplitter subsplitter;
+
+    public DataSplitter(long seed) {
+        rand = new Random(seed);
+        splitStep = null;
+        closureSteps = new ArrayList<ClosureStep>();
+        buildDBStep = null;
+        subsplitter = null;
+    }
+
+    public void setSplitStep(SplitStep splitStep) {
+        this.splitStep = splitStep;
+    }
+
+    public void addClosureStep(ClosureStep closureStep) {
+        closureSteps.add(closureStep);
+    }
+
+    public void clearClosureSteps() {
+        closureSteps.clear();
+    }
+
+    public void setBuildDBStep(BuildDBStep buildDBStep) {
+        this.buildDBStep = buildDBStep;
+    }
+
+    public void setSubsplitter(DataSplitter subsplitter) {
+        this.subsplitter = subsplitter;
+    }
+
+    public ExperimentTree split(Database db) {
+        if (splitStep == null)
+            throw new IllegalStateException("No SplitStep has been set.");
+        if (closureSteps.size() == 0)
+            throw new IllegalStateException("No ClosureStep has been set.");
+        if (buildDBStep == null)
+            throw new IllegalStateException("No BuildDBStep has been set.");
+
+        List<Collection<Partition>> partitionGroups = splitStep.getSplits(db, rand);
+        for (ClosureStep closureStep : closureSteps)
+            closureStep.doClosure(db, partitionGroups);
+        List<DBDefinition> dbDefs = buildDBStep.getDatabaseDefinitions(db, partitionGroups);
+
+        ExperimentTree tree = new ExperimentTree();
+
+        if (subsplitter != null) {
+            DataStore ds = db.getDataStore();
+            for (DBDefinition dbDef : dbDefs) {
+                Database subDB = ds.getDatabase(dbDef.write, dbDef.toClose, dbDef.read);
+                tree.addChild(subsplitter.split(subDB));
+                subDB.close();
+            }
+        }
+        else {
+            for (DBDefinition dbDef : dbDefs)
+                tree.addChild(new ExperimentTree(dbDef));
+        }
+
+        return tree;
+    }
 }

@@ -24,56 +24,56 @@ import org.linqs.psl.experimental.optimizer.conic.program.SecondOrderCone;
 import org.linqs.psl.experimental.optimizer.conic.program.Variable;
 
 public class ObjectiveCoefficientCompletePartitioner extends HierarchicalPartitioner {
-	private static final int base = 2;
+    private static final int base = 2;
 
-	@Override
-	protected double getWeight(LinearConstraint lc, Cone cone) {
-		if (restrictedConstraints.contains(lc)) {
-			return 300000.0 / alwaysCutConstraints.size();
-		}
-		else {
-			boolean hasFirstSingleton = false;
+    @Override
+    protected double getWeight(LinearConstraint lc, Cone cone) {
+        if (restrictedConstraints.contains(lc)) {
+            return 300000.0 / alwaysCutConstraints.size();
+        }
+        else {
+            boolean hasFirstSingleton = false;
 
-			for (Variable var : lc.getVariables().keySet()) {
-				if (isSingleton(var.getCone())) {
-					if (hasFirstSingleton) {
-						if (p % 2 == 0) {
-							if (cone instanceof NonNegativeOrthantCone)
-								return Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1);
-							else if (cone instanceof SecondOrderCone) {
-								double weight = 0.0;
-								for (Variable socVar : ((SecondOrderCone) cone).getVariables())
-									weight += socVar.getObjectiveCoefficient();
-								return Math.pow(base, Math.abs(weight) + 1);
-							}
-							else
-								throw new IllegalStateException();
-						}
-						else {
-							if (cone instanceof NonNegativeOrthantCone)
-								return 1 / (Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1));
-							else if (cone instanceof SecondOrderCone) {
-								double weight = 0.0;
-								for (Variable socVar : ((SecondOrderCone) cone).getVariables())
-									weight += socVar.getObjectiveCoefficient();
-								return 1 / (Math.pow(base, Math.abs(weight) + 1));
-							}
-							else
-								throw new IllegalStateException();
-						}
-					}
-					else {
-						hasFirstSingleton = true;
-					}
-				}
-			}
+            for (Variable var : lc.getVariables().keySet()) {
+                if (isSingleton(var.getCone())) {
+                    if (hasFirstSingleton) {
+                        if (p % 2 == 0) {
+                            if (cone instanceof NonNegativeOrthantCone)
+                                return Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1);
+                            else if (cone instanceof SecondOrderCone) {
+                                double weight = 0.0;
+                                for (Variable socVar : ((SecondOrderCone) cone).getVariables())
+                                    weight += socVar.getObjectiveCoefficient();
+                                return Math.pow(base, Math.abs(weight) + 1);
+                            }
+                            else
+                                throw new IllegalStateException();
+                        }
+                        else {
+                            if (cone instanceof NonNegativeOrthantCone)
+                                return 1 / (Math.pow(base, Math.abs(((NonNegativeOrthantCone) cone).getVariable().getObjectiveCoefficient()) + 1));
+                            else if (cone instanceof SecondOrderCone) {
+                                double weight = 0.0;
+                                for (Variable socVar : ((SecondOrderCone) cone).getVariables())
+                                    weight += socVar.getObjectiveCoefficient();
+                                return 1 / (Math.pow(base, Math.abs(weight) + 1));
+                            }
+                            else
+                                throw new IllegalStateException();
+                        }
+                    }
+                    else {
+                        hasFirstSingleton = true;
+                    }
+                }
+            }
 
-			return Double.POSITIVE_INFINITY;
-		}
-	}
+            return Double.POSITIVE_INFINITY;
+        }
+    }
 
-	@Override
-	protected void processAcceptedPartition() {
-		return;
-	}
+    @Override
+    protected void processAcceptedPartition() {
+        return;
+    }
 }

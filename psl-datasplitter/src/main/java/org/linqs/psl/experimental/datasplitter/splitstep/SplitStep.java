@@ -25,12 +25,12 @@ import org.linqs.psl.database.Database;
 import org.linqs.psl.database.Partition;
 
 /**
- * 
+ *
  * @author Bert Huang bert@cs.umd.edu
  *
  */
 public interface SplitStep {
 
-	List<Collection<Partition>> getSplits(Database inputDB, Random random);
-	
+    List<Collection<Partition>> getSplits(Database inputDB, Random random);
+
 }

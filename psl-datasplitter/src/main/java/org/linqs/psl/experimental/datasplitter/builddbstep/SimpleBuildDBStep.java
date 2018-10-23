@@ -28,32 +28,32 @@ import org.linqs.psl.model.predicate.StandardPredicate;
 
 /**
  * A simple class for the {@link BuildDBStep} interface that creates a list of {@link DBDefinition}s
- * with closed predicates specified by the user and a read partition to each collection of partitions in the passed list. 
+ * with closed predicates specified by the user and a read partition to each collection of partitions in the passed list.
  **/
 
 public class SimpleBuildDBStep implements BuildDBStep {
 
-	private Set<StandardPredicate> toClose;
-	public SimpleBuildDBStep(Set<StandardPredicate> toClose){
-		this.toClose = toClose;
-	}
-	
-	@Override
-	/**
-	 * Creates a list of {@link DBDefinition} objects. 
-	 * Each DBDefinition has a new write partition returned from the {@link DataStore} associated with the passed database.
-	 * The closed predicates in the DBDefinition are taken from those specified in the constructor to the class
-	 * Each DBDefinition has a read partition that corresponds to an element of the passed List of Partition Collections.
-	 * 
-	 **/
-	public List<DBDefinition> getDatabaseDefinitions(Database inputDB,
-			List<Collection<Partition>> partitionList) {
-		List<DBDefinition> dbDefs = new ArrayList<DBDefinition>();
-		for(Collection<Partition> pL : partitionList){
-			Partition wrPartition = inputDB.getDataStore().getNewPartition();
-			dbDefs.add(new DBDefinition(wrPartition, toClose, (Partition[]) pL.toArray()));
-		}
-		return dbDefs;
-	}
-	
+    private Set<StandardPredicate> toClose;
+    public SimpleBuildDBStep(Set<StandardPredicate> toClose){
+        this.toClose = toClose;
+    }
+
+    @Override
+    /**
+     * Creates a list of {@link DBDefinition} objects.
+     * Each DBDefinition has a new write partition returned from the {@link DataStore} associated with the passed database.
+     * The closed predicates in the DBDefinition are taken from those specified in the constructor to the class
+     * Each DBDefinition has a read partition that corresponds to an element of the passed List of Partition Collections.
+     *
+     **/
+    public List<DBDefinition> getDatabaseDefinitions(Database inputDB,
+            List<Collection<Partition>> partitionList) {
+        List<DBDefinition> dbDefs = new ArrayList<DBDefinition>();
+        for(Collection<Partition> pL : partitionList){
+            Partition wrPartition = inputDB.getDataStore().getNewPartition();
+            dbDefs.add(new DBDefinition(wrPartition, toClose, (Partition[]) pL.toArray()));
+        }
+        return dbDefs;
+    }
+
 }

@@ -22,15 +22,15 @@ import org.linqs.psl.reasoner.Reasoner;
 import org.linqs.psl.reasoner.ReasonerFactory;
 
 /** A factory for creating the latent topic networks wrapper for the ADMM reasoner.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  *
  */
 public class LtnADMMReasonerFactory implements ReasonerFactory {
-	
-	@Override
-	public Reasoner getReasoner(ConfigBundle config)
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-		return new LatentTopicNetworkADMMReasoner(config);
-	}
+
+    @Override
+    public Reasoner getReasoner(ConfigBundle config)
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        return new LatentTopicNetworkADMMReasoner(config);
+    }
 }

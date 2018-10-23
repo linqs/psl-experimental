@@ -27,8 +27,8 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class BlockPreconditionerFactory implements PreconditionerFactory {
-	@Override
-	public DoublePreconditioner getPreconditioner(ConicProgram program) {
-		return new BlockPreconditioner(program);
-	}
+    @Override
+    public DoublePreconditioner getPreconditioner(ConicProgram program) {
+        return new BlockPreconditioner(program);
+    }
 }

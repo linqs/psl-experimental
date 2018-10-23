@@ -43,82 +43,82 @@ import java.util.Set;
  *  - If the ground rule is hard (unweighted), the weight will be 0 and the line will end with "# .".
  */
 public class LibSVMSerialTermStore
-		extends MemoryTermStore<SimpleTerm> implements SerialTermStore<SimpleTerm> {
-	private Map<RandomVariableAtom, Integer> variableIds;
+        extends MemoryTermStore<SimpleTerm> implements SerialTermStore<SimpleTerm> {
+    private Map<RandomVariableAtom, Integer> variableIds;
 
-	public LibSVMSerialTermStore() {
-		super();
+    public LibSVMSerialTermStore() {
+        super();
 
-		variableIds = new HashMap<RandomVariableAtom, Integer>();
-	}
+        variableIds = new HashMap<RandomVariableAtom, Integer>();
+    }
 
-	@Override
-	public void serialize(BufferedWriter writer) throws IOException {
-		for (SimpleTerm term : this) {
-			writer.write(serializeTerm(term));
-			writer.newLine();
-		}
-	}
+    @Override
+    public void serialize(BufferedWriter writer) throws IOException {
+        for (SimpleTerm term : this) {
+            writer.write(serializeTerm(term));
+            writer.newLine();
+        }
+    }
 
-	@Override
-	public void deserialize(BufferedReader reader) {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void deserialize(BufferedReader reader) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public void add(GroundRule rule, SimpleTerm term) {
-		for (RandomVariableAtom atom : term.getAtoms()) {
-			if (!variableIds.containsKey(atom)) {
-				// Note that we are adding one to all the indexes to reserve 0 for the constant.
-				variableIds.put(atom, variableIds.size() + 1);
-			}
-		}
+    @Override
+    public void add(GroundRule rule, SimpleTerm term) {
+        for (RandomVariableAtom atom : term.getAtoms()) {
+            if (!variableIds.containsKey(atom)) {
+                // Note that we are adding one to all the indexes to reserve 0 for the constant.
+                variableIds.put(atom, variableIds.size() + 1);
+            }
+        }
 
-		super.add(rule, term);
-	}
+        super.add(rule, term);
+    }
 
-	@Override
-	public void clear() {
-		variableIds.clear();
-		super.clear();
-	}
+    @Override
+    public void clear() {
+        variableIds.clear();
+        super.clear();
+    }
 
-	@Override
-	public void close() {
-		clear();
-		super.close();
-	}
+    @Override
+    public void close() {
+        clear();
+        super.close();
+    }
 
-	private String serializeTerm(SimpleTerm term) {
-		StringBuilder builder = new StringBuilder(term.size() * 4 + 5);
+    private String serializeTerm(SimpleTerm term) {
+        StringBuilder builder = new StringBuilder(term.size() * 4 + 5);
 
-		// Weight
-		if (term.isHard()) {
-			builder.append("0");
-		} else {
-			builder.append(term.getWeight());
-		}
-		builder.append(" ");
+        // Weight
+        if (term.isHard()) {
+            builder.append("0");
+        } else {
+            builder.append(term.getWeight());
+        }
+        builder.append(" ");
 
-		// Constant
-		builder.append("0:");
-		builder.append(term.getConstant());
+        // Constant
+        builder.append("0:");
+        builder.append(term.getConstant());
 
-		// Variables
-		for (int i = 0; i < term.size(); i++) {
-			builder.append(" ");
-			builder.append(variableIds.get(term.getAtom(i)));
-			builder.append(":");
-			builder.append(term.getCoefficient(i));
-		}
+        // Variables
+        for (int i = 0; i < term.size(); i++) {
+            builder.append(" ");
+            builder.append(variableIds.get(term.getAtom(i)));
+            builder.append(":");
+            builder.append(term.getCoefficient(i));
+        }
 
-		// Final comment (hard or squared).
-		if (term.isHard()) {
-			builder.append(" # .");
-		} else if (term.isSquared()) {
-			builder.append(" # ^2");
-		}
+        // Final comment (hard or squared).
+        if (term.isHard()) {
+            builder.append(" # .");
+        } else if (term.isSquared()) {
+            builder.append(" # ^2");
+        }
 
-		return builder.toString();
-	}
+        return builder.toString();
+    }
 }

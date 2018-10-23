@@ -27,30 +27,30 @@ import org.linqs.psl.experimental.optimizer.conic.program.SecondOrderCone;
 import cern.colt.matrix.tdouble.DoubleMatrix1D;
 
 public class SecondOrderConeTest {
-	
-	private ConicProgram program;
 
-	@Before
-	public void setUp() {
-		program = new ConicProgram();
-	}
+    private ConicProgram program;
 
-	@Test
-	public void testGetMaxStep() {
-		SecondOrderCone coneA = program.createSecondOrderCone(2);
-		
-		program.checkOutMatrices();
-		
-		DoubleMatrix1D x = program.getX();
-		x.set(0, 0.0);
-		x.set(1, 1.0);
-		
-		DoubleMatrix1D dx = x.copy();
-		dx.set(0, 0.0);
-		dx.set(1, -1.1);
-		
-		double maxStep = coneA.getMaxStep(program.getVarMap(), x, dx);
-		assertTrue(1 - 1.1 * maxStep > 0.0);
-	}
+    @Before
+    public void setUp() {
+        program = new ConicProgram();
+    }
+
+    @Test
+    public void testGetMaxStep() {
+        SecondOrderCone coneA = program.createSecondOrderCone(2);
+
+        program.checkOutMatrices();
+
+        DoubleMatrix1D x = program.getX();
+        x.set(0, 0.0);
+        x.set(1, 1.0);
+
+        DoubleMatrix1D dx = x.copy();
+        dx.set(0, 0.0);
+        dx.set(1, -1.1);
+
+        double maxStep = coneA.getMaxStep(program.getVarMap(), x, dx);
+        assertTrue(1 - 1.1 * maxStep > 0.0);
+    }
 
 }

@@ -19,10 +19,10 @@ package org.linqs.psl.experimental.optimizer.lbfgs;
 
 public class PrematureConvergenceException extends RuntimeException {
 
-	private static final long serialVersionUID = 8693449104628927191L;
+    private static final long serialVersionUID = 8693449104628927191L;
 
-	public PrematureConvergenceException(String msg) {
-		super(msg);
-	}
-	
+    public PrematureConvergenceException(String msg) {
+        super(msg);
+    }
+
 }

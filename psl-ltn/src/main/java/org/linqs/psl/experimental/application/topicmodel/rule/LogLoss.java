@@ -26,37 +26,37 @@ import org.linqs.psl.model.rule.Rule;
 /**
  * First order log loss rules, useful when PSL variables are given a
  * probabilistic interpretation, as in latent topic networks.
- * 
+ *
  * @author Jimmy Foulds <jfoulds@ucsc.edu>
  */
 public class LogLoss implements Rule {
 
-	@Override
-	public void notifyAtomEvent(AtomEvent event) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void notifyAtomEvent(AtomEvent event) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void groundAll(AtomManager atomManager, GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void groundAll(AtomManager atomManager, GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void registerForAtomEvents(AtomEventFramework eventFramework,
-			GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void registerForAtomEvents(AtomEventFramework eventFramework,
+            GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public void unregisterForAtomEvents(AtomEventFramework eventFramework,
-			GroundRuleStore gks) {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void unregisterForAtomEvents(AtomEventFramework eventFramework,
+            GroundRuleStore gks) {
+        // TODO Auto-generated method stub
+    }
 
-	@Override
-	public Rule clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public Rule clone() throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

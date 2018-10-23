@@ -18,5 +18,5 @@
 package org.linqs.psl.experimental.optimizer.conic.program;
 
 public interface ConicProgramListener {
-	public void notify(ConicProgram sender, ConicProgramEvent event, Entity entity, Object... data);
+    public void notify(ConicProgram sender, ConicProgramEvent event, Entity entity, Object... data);
 }

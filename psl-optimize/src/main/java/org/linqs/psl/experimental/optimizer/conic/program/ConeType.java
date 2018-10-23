@@ -18,5 +18,5 @@
 package org.linqs.psl.experimental.optimizer.conic.program;
 
 public enum ConeType {
-	NonNegativeOrthantCone, SecondOrderCone, RotatedSecondOrderCone; 
+    NonNegativeOrthantCone, SecondOrderCone, RotatedSecondOrderCone;
 }

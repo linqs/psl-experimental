@@ -24,5 +24,5 @@ import org.linqs.psl.database.Database;
 import org.linqs.psl.database.Partition;
 
 public interface BuildDBStep {
-	List<DBDefinition> getDatabaseDefinitions(Database inputDB, List<Collection<Partition>> partitionList );
+    List<DBDefinition> getDatabaseDefinitions(Database inputDB, List<Collection<Partition>> partitionList );
 }

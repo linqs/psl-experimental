@@ -38,117 +38,117 @@ import java.util.Set;
  * problem to/from JSON.
  */
 public class JSONSerialTermStore
-		extends MemoryTermStore<SimpleTerm> implements SerialTermStore<SimpleTerm> {
-	private BidiMap<RandomVariableAtom, Integer> variableIds;
+        extends MemoryTermStore<SimpleTerm> implements SerialTermStore<SimpleTerm> {
+    private BidiMap<RandomVariableAtom, Integer> variableIds;
 
-	public JSONSerialTermStore() {
-		super();
+    public JSONSerialTermStore() {
+        super();
 
-		variableIds = new DualHashBidiMap<RandomVariableAtom, Integer>();
-	}
+        variableIds = new DualHashBidiMap<RandomVariableAtom, Integer>();
+    }
 
-	@Override
-	public void serialize(BufferedWriter writer) {
-		List<OutputTerm> objectiveSummands = new ArrayList<OutputTerm>();
-		List<OutputTerm> constraints = new ArrayList<OutputTerm>();
+    @Override
+    public void serialize(BufferedWriter writer) {
+        List<OutputTerm> objectiveSummands = new ArrayList<OutputTerm>();
+        List<OutputTerm> constraints = new ArrayList<OutputTerm>();
 
-		for (SimpleTerm term : this) {
-			if (term.isHard()) {
-				constraints.add(new OutputTerm(term));
-			} else {
-				objectiveSummands.add(new OutputTerm(term));
-			}
-		}
+        for (SimpleTerm term : this) {
+            if (term.isHard()) {
+                constraints.add(new OutputTerm(term));
+            } else {
+                objectiveSummands.add(new OutputTerm(term));
+            }
+        }
 
-		Output output = new Output(variableIds.values(), objectiveSummands, constraints);
+        Output output = new Output(variableIds.values(), objectiveSummands, constraints);
 
-		Gson gson = new Gson();
-		gson.toJson(output, writer);
-	}
+        Gson gson = new Gson();
+        gson.toJson(output, writer);
+    }
 
-	@Override
-	public void deserialize(BufferedReader reader) {
-		Gson gson = new Gson();
-		Input input = gson.fromJson(reader, Input.class);
+    @Override
+    public void deserialize(BufferedReader reader) {
+        Gson gson = new Gson();
+        Input input = gson.fromJson(reader, Input.class);
 
-		// Update the random variable atoms with their new values.
-		for (Map.Entry<Integer, Double> entry : input.solution.entrySet()) {
-			variableIds.getKey(entry.getKey()).setValue(entry.getValue().doubleValue());
-		}
-	}
+        // Update the random variable atoms with their new values.
+        for (Map.Entry<Integer, Double> entry : input.solution.entrySet()) {
+            variableIds.getKey(entry.getKey()).setValue(entry.getValue().floatValue());
+        }
+    }
 
-	@Override
-	public void add(GroundRule rule, SimpleTerm term) {
-		for (RandomVariableAtom atom : term.getAtoms()) {
-			if (!variableIds.containsKey(atom)) {
-				variableIds.put(atom, variableIds.size());
-			}
-		}
+    @Override
+    public void add(GroundRule rule, SimpleTerm term) {
+        for (RandomVariableAtom atom : term.getAtoms()) {
+            if (!variableIds.containsKey(atom)) {
+                variableIds.put(atom, variableIds.size());
+            }
+        }
 
-		super.add(rule, term);
-	}
+        super.add(rule, term);
+    }
 
-	@Override
-	public void clear() {
-		variableIds.clear();
-		super.clear();
-	}
+    @Override
+    public void clear() {
+        variableIds.clear();
+        super.clear();
+    }
 
-	@Override
-	public void close() {
-		clear();
-		super.close();
-	}
+    @Override
+    public void close() {
+        clear();
+        super.close();
+    }
 
-	private static class Output {
-		public Set<Integer> variables;
+    private static class Output {
+        public Set<Integer> variables;
 
-		public List<OutputTerm> objectiveSummands;
+        public List<OutputTerm> objectiveSummands;
 
-		// All formulated such that the summation of each term is <= 0.
-		public List<OutputTerm> constraints;
+        // All formulated such that the summation of each term is <= 0.
+        public List<OutputTerm> constraints;
 
-		public Output(Set<Integer> variables, List<OutputTerm> objectiveSummands, List<OutputTerm> constraints) {
-			this.variables = variables;
-			this.objectiveSummands = objectiveSummands;
-			this.constraints = constraints;
-		}
-	}
+        public Output(Set<Integer> variables, List<OutputTerm> objectiveSummands, List<OutputTerm> constraints) {
+            this.variables = variables;
+            this.objectiveSummands = objectiveSummands;
+            this.constraints = constraints;
+        }
+    }
 
-	private class OutputTerm {
-		public double constant;
-		public int[] variables;
-		public double[] coefficients;
-		public boolean squared;
-		public double weight;
+    private class OutputTerm {
+        public double constant;
+        public int[] variables;
+        public double[] coefficients;
+        public boolean squared;
+        public double weight;
 
-		public OutputTerm(double constant, int[] variables, double[] coefficients,
-				boolean squared, double weight) {
-			this.constant = constant;
-			this.variables = variables;
-			this.coefficients = coefficients;
-			this.squared = squared;
-			this.weight = weight;
-		}
+        public OutputTerm(double constant, int[] variables, double[] coefficients,
+                boolean squared, double weight) {
+            this.constant = constant;
+            this.variables = variables;
+            this.coefficients = coefficients;
+            this.squared = squared;
+            this.weight = weight;
+        }
 
-		public OutputTerm(SimpleTerm term) {
-			variables = new int[term.size()];
-			coefficients = new double[term.size()];
+        public OutputTerm(SimpleTerm term) {
+            variables = new int[term.size()];
+            coefficients = new double[term.size()];
 
-			List<RandomVariableAtom> rawAtoms = term.getAtoms();
-			List<Double> rawCoefficients = term.getCoefficients();
-			for (int i = 0; i < term.size(); i++) {
-				variables[i] = variableIds.get(rawAtoms.get(i)).intValue();
-				coefficients[i] = rawCoefficients.get(i).doubleValue();
-			}
+            List<RandomVariableAtom> rawAtoms = term.getAtoms();
+            List<Double> rawCoefficients = term.getCoefficients();
+            for (int i = 0; i < term.size(); i++) {
+                variables[i] = variableIds.get(rawAtoms.get(i)).intValue();
+                coefficients[i] = rawCoefficients.get(i).doubleValue();
+            }
 
-			constant = term.getConstant();
-			squared = term.isSquared();
-			weight = term.getWeight();
-		}
-	}
+            constant = term.getConstant();
+            squared = term.isSquared();
+            weight = term.getWeight();
+        }
+    }
 
-	private static class Input {
-		public Map<Integer, Double> solution;
-	}
+    private static class Input {
+        public Map<Integer, Double> solution;
+    }
 }

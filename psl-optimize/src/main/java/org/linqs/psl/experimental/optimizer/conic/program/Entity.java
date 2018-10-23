@@ -18,28 +18,28 @@
 package org.linqs.psl.experimental.optimizer.conic.program;
 
 abstract public class Entity {
-	protected ConicProgram program;
-	protected int id;
+    protected ConicProgram program;
+    protected int id;
 
-	Entity(ConicProgram p) {
-		program = p;
-		id = p.getNextID();
-	}
-	
-	abstract void delete();
-	
-	@Override
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		if (o instanceof Entity)
-			return id == ((Entity) o).id;
-		else
-			return false;
-	}
-	
-	@Override
-	public int hashCode() {
-		return id;
-	}
+    Entity(ConicProgram p) {
+        program = p;
+        id = p.getNextID();
+    }
+
+    abstract void delete();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null)
+            return false;
+        if (o instanceof Entity)
+            return id == ((Entity) o).id;
+        else
+            return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

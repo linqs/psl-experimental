@@ -26,12 +26,12 @@ import org.linqs.psl.experimental.optimizer.conic.ConicProgramSolverContractTest
 
 public class HomogeneousIPMTest extends ConicProgramSolverContractTest {
 
-	@Override
-	protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations()
-			throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-		Vector<HomogeneousIPM> solvers = new Vector<HomogeneousIPM>(1);
-		solvers.add(new HomogeneousIPM());
-		return solvers;
-	}
+    @Override
+    protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations()
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Vector<HomogeneousIPM> solvers = new Vector<HomogeneousIPM>(1);
+        solvers.add(new HomogeneousIPM());
+        return solvers;
+    }
 
 }

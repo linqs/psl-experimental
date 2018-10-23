@@ -29,39 +29,39 @@ import java.nio.file.Paths;
  * A reasoner that calls into CVXPY for downstream solving.
  */
 public class CVXPYReasoner extends ExecutableReasoner {
-	public static final String MODEL_PATH =
-			Paths.get(System.getProperty("java.io.tmpdir"), "psl_cvxpy_model.json").toString();
+    public static final String MODEL_PATH =
+            Paths.get(System.getProperty("java.io.tmpdir"), "psl_cvxpy_model.json").toString();
 
-	public static final String RESULTS_PATH =
-			Paths.get(System.getProperty("java.io.tmpdir"), "psl_cvxpy_results.json").toString();
+    public static final String RESULTS_PATH =
+            Paths.get(System.getProperty("java.io.tmpdir"), "psl_cvxpy_results.json").toString();
 
-	public CVXPYReasoner() {
-		super();
+    public CVXPYReasoner() {
+        super();
 
-		this.executableInputPath = MODEL_PATH;
-		this.executableOutputPath = RESULTS_PATH;
-		this.args = new String[]{MODEL_PATH, RESULTS_PATH};
-	}
+        this.executableInputPath = MODEL_PATH;
+        this.executableOutputPath = RESULTS_PATH;
+        this.args = new String[]{MODEL_PATH, RESULTS_PATH};
+    }
 
-	public CVXPYReasoner(String executablePath) {
-		super(executablePath, MODEL_PATH, RESULTS_PATH,	new String[]{MODEL_PATH, RESULTS_PATH});
-	}
+    public CVXPYReasoner(String executablePath) {
+        super(executablePath, MODEL_PATH, RESULTS_PATH, new String[]{MODEL_PATH, RESULTS_PATH});
+    }
 
-	@Override
-	protected void writeModel(BufferedWriter modelWriter, TermStore termStore) throws IOException {
-		if (!(termStore instanceof JSONSerialTermStore)) {
-			throw new IllegalArgumentException("Requires a JSONSerialTermStore");
-		}
+    @Override
+    protected void writeModel(BufferedWriter modelWriter, TermStore termStore) throws IOException {
+        if (!(termStore instanceof JSONSerialTermStore)) {
+            throw new IllegalArgumentException("Requires a JSONSerialTermStore");
+        }
 
-		((JSONSerialTermStore)termStore).serialize(modelWriter);
-	}
+        ((JSONSerialTermStore)termStore).serialize(modelWriter);
+    }
 
-	@Override
-	protected void readResults(BufferedReader resultsReader, TermStore termStore) throws IOException {
-		if (!(termStore instanceof JSONSerialTermStore)) {
-			throw new IllegalArgumentException("Requires a JSONSerialTermStore");
-		}
+    @Override
+    protected void readResults(BufferedReader resultsReader, TermStore termStore) throws IOException {
+        if (!(termStore instanceof JSONSerialTermStore)) {
+            throw new IllegalArgumentException("Requires a JSONSerialTermStore");
+        }
 
-		((JSONSerialTermStore)termStore).deserialize(resultsReader);
-	}
+        ((JSONSerialTermStore)termStore).deserialize(resultsReader);
+    }
 }

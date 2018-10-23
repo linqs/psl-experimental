@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Vector;
 
 public class ConjugateGradientIPMTest extends ConicProgramSolverContractTest {
-	@Override
-	protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations() {
-		Vector<ConjugateGradientIPM> solvers = new Vector<ConjugateGradientIPM>(1);
-		solvers.add(new ConjugateGradientIPM());
-		return solvers;
-	}
+    @Override
+    protected List<? extends ConicProgramSolver> getConicProgramSolverImplementations() {
+        Vector<ConjugateGradientIPM> solvers = new Vector<ConjugateGradientIPM>(1);
+        solvers.add(new ConjugateGradientIPM());
+        return solvers;
+    }
 }

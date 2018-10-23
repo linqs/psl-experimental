@@ -23,18 +23,18 @@ import org.linqs.psl.experimental.optimizer.conic.program.ConeType;
 import org.linqs.psl.experimental.optimizer.conic.program.ConicProgram;
 
 public interface CompletePartitioner {
-	
-	public void setConicProgram(ConicProgram p);
 
-	public void partition();
-	
-	public ConicProgramPartition getPartition(int i);
-	
-	public int size();
-	
-	public void checkOutAllMatrices();
-	
-	public void checkInAllMatrices();
-	
-	public boolean supportsConeTypes(Collection<ConeType> types);
+    public void setConicProgram(ConicProgram p);
+
+    public void partition();
+
+    public ConicProgramPartition getPartition(int i);
+
+    public int size();
+
+    public void checkOutAllMatrices();
+
+    public void checkInAllMatrices();
+
+    public boolean supportsConeTypes(Collection<ConeType> types);
 }

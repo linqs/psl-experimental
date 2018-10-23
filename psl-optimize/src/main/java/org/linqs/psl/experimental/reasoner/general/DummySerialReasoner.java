@@ -35,45 +35,45 @@ import java.nio.file.Paths;
  * It doesn't even wait for a response.
  */
 public class DummySerialReasoner implements Reasoner {
-	private static final Logger log = LoggerFactory.getLogger(DummySerialReasoner.class);
+    private static final Logger log = LoggerFactory.getLogger(DummySerialReasoner.class);
 
-	/**
-	 * Prefix of property keys used by this class.
-	 */
-	public static final String CONFIG_PREFIX = "dummyserialreasoner";
+    /**
+     * Prefix of property keys used by this class.
+     */
+    public static final String CONFIG_PREFIX = "dummyserialreasoner";
 
-	/**
-	 * The path the to output file.
-	 */
-	public static final String OUTPUT_PATH_KEY = CONFIG_PREFIX + ".executablepath";
-	public static final String OUTPUT_PATH_DEFAULT =
-			Paths.get(System.getProperty("java.io.tmpdir"), "psl_serial_model.txt").toString();
+    /**
+     * The path the to output file.
+     */
+    public static final String OUTPUT_PATH_KEY = CONFIG_PREFIX + ".executablepath";
+    public static final String OUTPUT_PATH_DEFAULT =
+            Paths.get(System.getProperty("java.io.tmpdir"), "psl_serial_model.txt").toString();
 
-	private String path;
+    private String path;
 
-	public DummySerialReasoner() {
-		super();
+    public DummySerialReasoner() {
+        super();
 
-		path = Config.getString(OUTPUT_PATH_KEY, OUTPUT_PATH_DEFAULT);
-	}
+        path = Config.getString(OUTPUT_PATH_KEY, OUTPUT_PATH_DEFAULT);
+    }
 
-	@Override
-	public void optimize(TermStore termStore) {
-		if (!(termStore instanceof SerialTermStore)) {
-			throw new IllegalArgumentException("Requires a SerialTermStore");
-		}
+    @Override
+    public void optimize(TermStore termStore) {
+        if (!(termStore instanceof SerialTermStore)) {
+            throw new IllegalArgumentException("Requires a SerialTermStore");
+        }
 
-		log.debug("Writing model file: " + path);
-		File modelFile = new File(path);
+        log.debug("Writing model file: " + path);
+        File modelFile = new File(path);
 
-		try (BufferedWriter modelWriter = new BufferedWriter(new FileWriter(modelFile))) {
-			((SerialTermStore)termStore).serialize(modelWriter);
-		} catch (IOException ex) {
-			throw new RuntimeException("Failed to write model file: " + path, ex);
-		}
-	}
+        try (BufferedWriter modelWriter = new BufferedWriter(new FileWriter(modelFile))) {
+            ((SerialTermStore)termStore).serialize(modelWriter);
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to write model file: " + path, ex);
+        }
+    }
 
-	@Override
-	public void close() {
-	}
+    @Override
+    public void close() {
+    }
 }

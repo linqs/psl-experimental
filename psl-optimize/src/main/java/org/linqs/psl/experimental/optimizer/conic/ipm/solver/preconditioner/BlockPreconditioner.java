@@ -35,60 +35,60 @@ import java.util.Set;
 
 public class BlockPreconditioner implements DoublePreconditioner {
 
-	private static final Logger log = LoggerFactory.getLogger(BlockPreconditioner.class);
+    private static final Logger log = LoggerFactory.getLogger(BlockPreconditioner.class);
 
-	protected final ConicProgram program;
-	protected final ConicProgramPartition partition;
-	protected SparseDoubleCholeskyDecomposition cholesky;
+    protected final ConicProgram program;
+    protected final ConicProgramPartition partition;
+    protected SparseDoubleCholeskyDecomposition cholesky;
 
-	public BlockPreconditioner(ConicProgram program) {
-		this.program = program;
-		ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner();
-		partitioner.setConicProgram(program);
-		partition = partitioner.getPartition();
-	}
+    public BlockPreconditioner(ConicProgram program) {
+        this.program = program;
+        ObjectiveCoefficientPartitioner partitioner = new ObjectiveCoefficientPartitioner();
+        partitioner.setConicProgram(program);
+        partition = partitioner.getPartition();
+    }
 
-	@Override
-	public DoubleMatrix1D apply(DoubleMatrix1D b, DoubleMatrix1D x) {
-		x.assign(b);
-		cholesky.solve(x);
-		return x;
-	}
+    @Override
+    public DoubleMatrix1D apply(DoubleMatrix1D b, DoubleMatrix1D x) {
+        x.assign(b);
+        cholesky.solve(x);
+        return x;
+    }
 
-	@Override
-	public DoubleMatrix1D transApply(DoubleMatrix1D b, DoubleMatrix1D x) {
-		return apply(b, x);
-	}
+    @Override
+    public DoubleMatrix1D transApply(DoubleMatrix1D b, DoubleMatrix1D x) {
+        return apply(b, x);
+    }
 
-	@Override
-	public void setMatrix(DoubleMatrix2D A) {
-		log.trace("Starting to set matrix.");
-		DoubleMatrix2D localA = A.copy();
-		Set<LinearConstraint> cutConstraints = partition.getCutConstraints();
-		final Set<Integer> cutRows = new HashSet<Integer>();
-		for (LinearConstraint con : cutConstraints) {
-			cutRows.add(program.getIndex(con));
-		}
+    @Override
+    public void setMatrix(DoubleMatrix2D A) {
+        log.trace("Starting to set matrix.");
+        DoubleMatrix2D localA = A.copy();
+        Set<LinearConstraint> cutConstraints = partition.getCutConstraints();
+        final Set<Integer> cutRows = new HashSet<Integer>();
+        for (LinearConstraint con : cutConstraints) {
+            cutRows.add(program.getIndex(con));
+        }
 
-		localA.forEachNonZero(new IntIntDoubleFunction() {
+        localA.forEachNonZero(new IntIntDoubleFunction() {
 
-			@Override
-			public double apply(int first, int second, double third) {
-				boolean containsFirst = cutRows.contains(first);
-				if (first == second && containsFirst)
-					return 1;
+            @Override
+            public double apply(int first, int second, double third) {
+                boolean containsFirst = cutRows.contains(first);
+                if (first == second && containsFirst)
+                    return 1;
 
-				boolean containsSecond = cutRows.contains(second);
+                boolean containsSecond = cutRows.contains(second);
 
-				if (containsFirst || containsSecond)
-					return 0;
-				else
-					return third;
-			}
-		});
+                if (containsFirst || containsSecond)
+                    return 0;
+                else
+                    return third;
+            }
+        });
 
-		cholesky = new SparseDoubleCholeskyDecomposition(localA, 1);
-		log.trace("Matrix set.");
-	}
+        cholesky = new SparseDoubleCholeskyDecomposition(localA, 1);
+        log.trace("Matrix set.");
+    }
 
 }

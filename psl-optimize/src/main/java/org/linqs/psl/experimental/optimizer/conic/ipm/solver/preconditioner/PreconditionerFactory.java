@@ -23,9 +23,9 @@ import cern.colt.matrix.tdouble.algo.solver.preconditioner.DoublePreconditioner;
 
 /**
  * Factory for a preconditioner.
- * 
+ *
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public interface PreconditionerFactory {
-	public DoublePreconditioner getPreconditioner(ConicProgram program);
+    public DoublePreconditioner getPreconditioner(ConicProgram program);
 }

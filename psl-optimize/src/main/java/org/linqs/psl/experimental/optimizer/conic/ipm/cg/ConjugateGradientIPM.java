@@ -38,74 +38,74 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
  */
 public class ConjugateGradientIPM extends IPM {
 
-	/**
-	 * Prefix of property keys used by this class.
-	 */
-	public static final String CONFIG_PREFIX = "cgipm";
+    /**
+     * Prefix of property keys used by this class.
+     */
+    public static final String CONFIG_PREFIX = "cgipm";
 
-	/**
-	 * Key for integer property. The ConjugateGradientIPM will throw an
-	 * exception if the conjugate gradient solver completes this many iterations
-	 * without solving the normal system.
-	 */
-	public static final String CG_MAX_ITER_KEY = CONFIG_PREFIX + ".maxcgiter";
-	/** Default value for CG_MAX_ITER_KEY property */
-	public static final int CG_MAX_ITER_DEFAULT = 1000000;
+    /**
+     * Key for integer property. The ConjugateGradientIPM will throw an
+     * exception if the conjugate gradient solver completes this many iterations
+     * without solving the normal system.
+     */
+    public static final String CG_MAX_ITER_KEY = CONFIG_PREFIX + ".maxcgiter";
+    /** Default value for CG_MAX_ITER_KEY property */
+    public static final int CG_MAX_ITER_DEFAULT = 1000000;
 
-	/**
-	 * Key for double property. The conjugate gradient solver will terminate
-	 * as converged if the residual is less than this value times the
-	 * initial residual.
-	 */
-	public static final String CG_REL_TOL_KEY = CONFIG_PREFIX + ".cgreltol";
-	/** Default value for CG_REL_TOL_KEY property */
-	public static final double CG_REL_TOL_DEFAULT = 1e-10;
+    /**
+     * Key for double property. The conjugate gradient solver will terminate
+     * as converged if the residual is less than this value times the
+     * initial residual.
+     */
+    public static final String CG_REL_TOL_KEY = CONFIG_PREFIX + ".cgreltol";
+    /** Default value for CG_REL_TOL_KEY property */
+    public static final double CG_REL_TOL_DEFAULT = 1e-10;
 
-	/**
-	 * Key for double property. The conjugate gradient solver will terminate
-	 * as converged if the residual is less than this value.
-	 */
-	public static final String CG_ABS_TOL_KEY = CONFIG_PREFIX + ".cgabstol";
-	/** Default value for CG_REL_TOL_KEY property */
-	public static final double CG_ABS_TOL_DEFAULT = 1e-50;
+    /**
+     * Key for double property. The conjugate gradient solver will terminate
+     * as converged if the residual is less than this value.
+     */
+    public static final String CG_ABS_TOL_KEY = CONFIG_PREFIX + ".cgabstol";
+    /** Default value for CG_REL_TOL_KEY property */
+    public static final double CG_ABS_TOL_DEFAULT = 1e-50;
 
-	/**
-	 * Key for double property. The ConjugateGradientIPM will throw an
-	 * exception if the conjugate graident solver reaches an iterate
-	 * whose residual is at least this value times the initial residual.
-	 */
-	public static final String CG_DIV_TOL_KEY = CONFIG_PREFIX + ".cgdivtol";
-	/** Default value for CG_DIV_TOL_KEY property */
-	public static final double CG_DIV_TOL_DEFAULT = 1e5;
+    /**
+     * Key for double property. The ConjugateGradientIPM will throw an
+     * exception if the conjugate graident solver reaches an iterate
+     * whose residual is at least this value times the initial residual.
+     */
+    public static final String CG_DIV_TOL_KEY = CONFIG_PREFIX + ".cgdivtol";
+    /** Default value for CG_DIV_TOL_KEY property */
+    public static final double CG_DIV_TOL_DEFAULT = 1e5;
 
-	private final int maxIter;
-	private final double relTol;
-	private final double absTol;
-	private final double divTol;
+    private final int maxIter;
+    private final double relTol;
+    private final double absTol;
+    private final double divTol;
 
-	public ConjugateGradientIPM() {
-		super();
+    public ConjugateGradientIPM() {
+        super();
 
-		maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
-		relTol = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
-		absTol = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
-		divTol = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
-	}
+        maxIter = Config.getInt(CG_MAX_ITER_KEY, CG_MAX_ITER_DEFAULT);
+        relTol = Config.getDouble(CG_REL_TOL_KEY, CG_REL_TOL_DEFAULT);
+        absTol = Config.getDouble(CG_ABS_TOL_KEY, CG_ABS_TOL_DEFAULT);
+        divTol = Config.getDouble(CG_DIV_TOL_KEY, CG_DIV_TOL_DEFAULT);
+    }
 
-	@Override
-	protected void solveNormalSystem(SparseCCDoubleMatrix2D A, DoubleMatrix1D x, ConicProgram program) {
-		DoubleCG cg = new DoubleCG(x);
-		cg.setIterationMonitor(new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol));
-		DoublePreconditioner preconditioner = new DoubleIdentity();
-		preconditioner.setMatrix(A);
-		cg.setPreconditioner(preconditioner);
-		DoubleMatrix1D b = x.copy();
-		x.assign(0);
-		try {
-			cg.solve(A, b, x);
-		}
-		catch (IterativeSolverDoubleNotConvergedException e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
+    @Override
+    protected void solveNormalSystem(SparseCCDoubleMatrix2D A, DoubleMatrix1D x, ConicProgram program) {
+        DoubleCG cg = new DoubleCG(x);
+        cg.setIterationMonitor(new DefaultDoubleIterationMonitor(maxIter, relTol, absTol, divTol));
+        DoublePreconditioner preconditioner = new DoubleIdentity();
+        preconditioner.setMatrix(A);
+        cg.setPreconditioner(preconditioner);
+        DoubleMatrix1D b = x.copy();
+        x.assign(0);
+        try {
+            cg.solve(A, b, x);
+        }
+        catch (IterativeSolverDoubleNotConvergedException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
 }

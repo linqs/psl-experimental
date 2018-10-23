@@ -29,20 +29,20 @@ import cern.colt.matrix.tdouble.impl.SparseCCDoubleMatrix2D;
  * @author Stephen Bach <bach@cs.umd.edu>
  */
 public class Cholesky implements NormalSystemSolver {
-	private SparseDoubleCholeskyDecomposition decomposition;
+    private SparseDoubleCholeskyDecomposition decomposition;
 
-	@Override
-	public void setConicProgram(ConicProgram program) {
-		/* Intentionally blank */
-	}
+    @Override
+    public void setConicProgram(ConicProgram program) {
+        /* Intentionally blank */
+    }
 
-	@Override
-	public void setA(SparseCCDoubleMatrix2D A) {
-		decomposition = new SparseDoubleCholeskyDecomposition(A, 1);
-	}
+    @Override
+    public void setA(SparseCCDoubleMatrix2D A) {
+        decomposition = new SparseDoubleCholeskyDecomposition(A, 1);
+    }
 
-	@Override
-	public void solve(DoubleMatrix1D b) {
-		decomposition.solve(b);
-	}
+    @Override
+    public void solve(DoubleMatrix1D b) {
+        decomposition.solve(b);
+    }
 }

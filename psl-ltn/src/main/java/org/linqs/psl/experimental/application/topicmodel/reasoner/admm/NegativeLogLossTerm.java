@@ -24,56 +24,56 @@ import org.linqs.psl.reasoner.admm.WeightedObjectiveTerm;
 /**
  * {@link ADMMReasoner} objective term of the form <br />
  * weight * coeffs^T * -log(x)
- * 
+ *
  * @author Jimmy Foulds <jrfoulds@gmail.com>
  */
 public class NegativeLogLossTerm extends ADMMObjectiveTerm implements WeightedObjectiveTerm {
-	
-	private final double[] coeffs;
-	private double weight;
-	
-	NegativeLogLossTerm(ADMMReasoner reasoner, int[] zIndices, double[] coeffs, double weight) {
-		super(reasoner, zIndices);
-		this.coeffs = coeffs;
-		setWeight(weight);
-	}
 
-	@Override
-	public void setWeight(double weight) {
-		this.weight = weight;
-	}
-	
-	@Override
-	protected void minimize() {
-		double a, b, c, sol1, sol2;
-		for (int i = 0; i < x.length; i++) {
-			//the updated value is the positive value of the two solutions to a quadratic equation
-			a = reasoner.stepSize;
-			b = (y[i] - a * reasoner.getConsensusVariableValue(zIndices[i]));
-			c = -coeffs[i] * weight;
-			sol1 = (-b + Math.sqrt(b*b - 4 * a * c)) / 2 * a;
-			sol2 = (-b - Math.sqrt(b*b - 4 * a * c)) / 2 * a;
-			/*if (sol1 >= 0) {
-				x[i] = sol1;
-			}
-			else {
-				x[i] = sol2;
-			}*/
-			x[i] = Math.max(sol1, sol2); //This should be equivalent but hopefully faster
-		}
-	}
-	
-	public double initAsDirichlet() {
-		double coefficientSum = 0;
-		assert (x.length == coeffs.length);
-		for (int i = 0; i < coeffs.length; i++) {
-			coefficientSum += coeffs[i];
-		}
-		for (int i = 0; i < coeffs.length; i++) {
-			x[i] = coeffs[i] / coefficientSum;
-			y[i] = coefficientSum;
-		}
-		
-		return coefficientSum;
-	}
+    private final double[] coeffs;
+    private double weight;
+
+    NegativeLogLossTerm(ADMMReasoner reasoner, int[] zIndices, double[] coeffs, double weight) {
+        super(reasoner, zIndices);
+        this.coeffs = coeffs;
+        setWeight(weight);
+    }
+
+    @Override
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
+
+    @Override
+    protected void minimize() {
+        double a, b, c, sol1, sol2;
+        for (int i = 0; i < x.length; i++) {
+            //the updated value is the positive value of the two solutions to a quadratic equation
+            a = reasoner.stepSize;
+            b = (y[i] - a * reasoner.getConsensusVariableValue(zIndices[i]));
+            c = -coeffs[i] * weight;
+            sol1 = (-b + Math.sqrt(b*b - 4 * a * c)) / 2 * a;
+            sol2 = (-b - Math.sqrt(b*b - 4 * a * c)) / 2 * a;
+            /*if (sol1 >= 0) {
+                x[i] = sol1;
+            }
+            else {
+                x[i] = sol2;
+            }*/
+            x[i] = Math.max(sol1, sol2); //This should be equivalent but hopefully faster
+        }
+    }
+
+    public double initAsDirichlet() {
+        double coefficientSum = 0;
+        assert (x.length == coeffs.length);
+        for (int i = 0; i < coeffs.length; i++) {
+            coefficientSum += coeffs[i];
+        }
+        for (int i = 0; i < coeffs.length; i++) {
+            x[i] = coeffs[i] / coefficientSum;
+            y[i] = coefficientSum;
+        }
+
+        return coefficientSum;
+    }
 }
