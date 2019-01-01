@@ -1,4 +1,15 @@
+dist: xenial
+
 language: java
+
+jdk: openjdk8
+
+before_install:
+  - sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+  - export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+  - java -version
+  - sudo apt-get update
+  - sudo apt-get install python3 python3-pip python3-wheel python3-setuptools python3-pandas
 
 install:
    - ./.ci/build_core.sh psl psl-utils
