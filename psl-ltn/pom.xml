@@ -35,11 +35,6 @@
             <artifactId>psl-core</artifactId>
             <version>${psl-core-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.linqs</groupId>
-            <artifactId>psl-graph</artifactId>
-            <version>${psl-utils-version}</version>
-        </dependency>
 
         <!-- linear algebra dependencies -->
         <dependency>
