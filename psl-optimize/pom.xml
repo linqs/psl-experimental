@@ -35,11 +35,6 @@
             <artifactId>psl-core</artifactId>
             <version>${psl-core-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.linqs</groupId>
-            <artifactId>psl-graph</artifactId>
-            <version>${psl-utils-version}</version>
-        </dependency>
 
         <!-- linear algebra dependencies -->
         <dependency>
@@ -57,6 +52,11 @@
             <artifactId>jplasma</artifactId>
             <version>1.2</version>
         </dependency>
+		<dependency>
+			<groupId>edu.emory.mathcs</groupId>
+			<artifactId>parallelcolt</artifactId>
+			<version>0.9.4</version>
+		</dependency>
 
         <!-- logging dependencies -->
         <dependency>

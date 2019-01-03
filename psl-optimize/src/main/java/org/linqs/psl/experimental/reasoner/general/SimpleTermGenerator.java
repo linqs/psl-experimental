@@ -54,11 +54,6 @@ public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
         return count;
     }
 
-    @Override
-    public void updateWeights(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
-        // TODO(eriq): Since we don't keep internal representations of the weights, I don't think we need to do anything.
-    }
-
     private SimpleTerm createTerm(GroundRule rule) {
         if (rule instanceof AbstractGroundLogicalRule) {
             return createLogicalTerm((AbstractGroundLogicalRule)rule);

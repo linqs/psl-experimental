@@ -17,7 +17,7 @@
  */
 package org.linqs.psl.experimental.reasoner.general;
 
-import org.linqs.psl.reasoner.term.Term;
+import org.linqs.psl.reasoner.term.ReasonerTerm;
 import org.linqs.psl.reasoner.term.TermStore;
 
 import java.io.BufferedReader;
@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * A TermStore that can write out its terms to a file.
  */
-public interface SerialTermStore<E extends Term> extends TermStore<E> {
+public interface SerialTermStore<E extends ReasonerTerm> extends TermStore<E> {
     /**
      * Write out the optimiztion problem
      * (variables, objective, and constraints) to a file.
