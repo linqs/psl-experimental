@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2018 The Regents of the University of California
+ * Copyright 2013-2019 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.linqs.psl.model.atom.GroundAtom;
 import org.linqs.psl.model.atom.ObservedAtom;
 import org.linqs.psl.model.atom.RandomVariableAtom;
 import org.linqs.psl.model.rule.GroundRule;
-import org.linqs.psl.reasoner.term.Term;
+import org.linqs.psl.reasoner.term.ReasonerTerm;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import java.util.List;
  * Simple terms for oprimization.
  * These terms are just simple summations and we want to minimize them.
  */
-public class SimpleTerm implements Term {
+public class SimpleTerm implements ReasonerTerm {
     private final GroundRule groundRule;
     private double constant;
     private boolean hard;
@@ -152,11 +152,6 @@ public class SimpleTerm implements Term {
         return builder.toString();
     }
 
-    @Override
-    public void weightChanged() {
-    }
-
-    @Override
     public GroundRule getGroundRule() {
         return groundRule;
     }

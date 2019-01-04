@@ -1,7 +1,7 @@
 /*
  * This file is part of the PSL software.
  * Copyright 2011-2015 University of Maryland
- * Copyright 2013-2018 The Regents of the University of California
+ * Copyright 2013-2019 The Regents of the University of California
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,11 +52,6 @@ public class SimpleTermGenerator implements TermGenerator<SimpleTerm> {
         }
 
         return count;
-    }
-
-    @Override
-    public void updateWeights(GroundRuleStore ruleStore, TermStore<SimpleTerm> termStore) {
-        // TODO(eriq): Since we don't keep internal representations of the weights, I don't think we need to do anything.
     }
 
     private SimpleTerm createTerm(GroundRule rule) {
