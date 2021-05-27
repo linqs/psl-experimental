@@ -11,6 +11,8 @@ The following modules are provided by psl-experimental:
  - psl-mosek
  - psl-optimize
 
+Note: psl-ltn depends on an outdated version of PSL. Also note that support for LTN is included in PSL version 2.0.0. To build this module in psl-experimental, you need to build version 2.0.0 of PSL, version 1.0.0 of psl-utils, and version 1.0.0 of psl-experimental.
+
 Additional Resources
 ====================
 - [PSL Homepage](http://psl.linqs.org)
